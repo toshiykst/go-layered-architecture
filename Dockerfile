@@ -2,14 +2,13 @@ FROM golang:1.19-alpine as builder
 
 WORKDIR /go/src/github.com/toshiykst/go-layerd-architecture
 
-COPY go.mod ./
-#COPY go.mod go.sum ./
+COPY go.mod go.sum ./
 
 RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 go build -o go-layerd-architecture app/cmd/http/main.go
+RUN CGO_ENABLED=0 go build -o go-layerd-architecture app/cmd/server/main.go
 
 
 FROM gcr.io/distroless/static
