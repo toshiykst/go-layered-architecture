@@ -9,7 +9,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o go-layerd-architecture app/cmd/http/main.go
+RUN CGO_ENABLED=0 go build -o go-layerd-architecture app/cmd/http/main.go
 
 
 FROM gcr.io/distroless/static
