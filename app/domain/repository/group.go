@@ -8,13 +8,13 @@ import (
 type GroupRepositoryQuery interface {
 	Find(id model.GroupID) (*model.Group, error)
 	FindByName(name string) (*model.Group, error)
-	List() []*model.Group
+	List() ([]*model.Group, error)
 }
 
 // GroupRepositoryCommand is interface for query and command methods of group.
 type GroupRepositoryCommand interface {
 	GroupRepositoryQuery
-	Create(u *model.Group) (*model.Group, error)
-	Update(u *model.Group) (*model.Group, error)
+	Create(g *model.Group) (*model.Group, error)
+	Update(g *model.Group) error
 	Delete(id model.GroupID) error
 }
