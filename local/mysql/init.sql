@@ -1,6 +1,3 @@
-# CREATE DATABASE IF NOT EXISTS go_layered_architecture;
-# USE go_layered_architecture;
-
 CREATE TABLE IF NOT EXISTS `users` (
     `id`          VARCHAR(255) PRIMARY KEY NOT NULL,
     `title`       VARCHAR(255) NOT NULL,
