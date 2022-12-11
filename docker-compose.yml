@@ -1,9 +1,10 @@
 services:
   app:
-    build: .
+    image: cosmtrek/air
     tty: true
     env_file:
       - .env
+    working_dir: /go/src/github.com/toshiykst/golang-rest-api
     volumes:
       - ./:/go/src/github.com/toshiykst/golang-rest-api
     ports:
