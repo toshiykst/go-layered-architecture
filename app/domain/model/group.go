@@ -6,7 +6,7 @@ type GroupID string
 // Group is a user domain model.
 
 type Group struct {
-	ID      string
+	ID      GroupID
 	Name    string
 	UserIDs []UserID
 }
