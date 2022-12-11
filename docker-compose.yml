@@ -1,0 +1,34 @@
+services:
+  app:
+    build: .
+    tty: true
+    env_file:
+      - .env
+    volumes:
+      - ./:/go/src/github.com/toshiykst/golang-rest-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+  mysql:
+    image: mysql:8.0.31
+    environment:
+      TZ: Asia/Tokyo
+    volumes:
+      - ./local/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./local/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - mysql:/var/lib/mysql
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: "mysqladmin ping -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD} | grep 'mysqld is alive'"
+      interval: 5s
+      retries: 10
+      start_period: 5s
+      timeout: 20s
+
+volumes:
+  mysql:
