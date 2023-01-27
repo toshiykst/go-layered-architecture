@@ -1,8 +1,9 @@
 package database
 
 import (
-	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"gorm.io/gorm"
+
+	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 )
 
 type groupDataModel struct {

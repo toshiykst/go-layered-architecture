@@ -1,9 +1,11 @@
 package handler
 
 import (
-	"github.com/labstack/echo"
-	"github.com/toshiykst/go-layerd-architecture/app/usecase"
 	"net/http"
+
+	"github.com/labstack/echo"
+
+	"github.com/toshiykst/go-layerd-architecture/app/usecase"
 )
 
 type userHandler struct {

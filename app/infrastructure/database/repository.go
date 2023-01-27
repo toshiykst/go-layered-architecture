@@ -3,9 +3,11 @@ package database
 import (
 	"context"
 	"fmt"
-	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 )
 
 type dbRepository struct {
