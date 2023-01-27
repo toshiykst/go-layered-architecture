@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 
 [build]
   bin = "tmp/app"
-  cmd = "CGO_ENABLED=0 go build -o tmp/app app/cmd/http/main.go"
+  cmd = "CGO_ENABLED=0 go build -o tmp/app app/cmd/server/main.go"
   exclude_dir = ["tmp", "testdata", "local"]
   exclude_file = []
   exclude_regex = ["_test.go"]
