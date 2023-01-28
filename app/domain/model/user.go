@@ -1,11 +1,38 @@
 package model
 
-// UserID is identifier for user.
 type UserID string
 
-// User is a user domain model.
 type User struct {
-	ID    UserID
-	Name  string
-	Email string
+	id    UserID
+	name  string
+	email string
+}
+
+func NewUser(id UserID, name, email string) *User {
+	return &User{
+		id:    id,
+		name:  name,
+		email: email,
+	}
+}
+
+func (u *User) ID() UserID {
+	if u == nil {
+		return ""
+	}
+	return u.id
+}
+
+func (u *User) Name() string {
+	if u == nil {
+		return ""
+	}
+	return u.name
+}
+
+func (u *User) Email() string {
+	if u == nil {
+		return ""
+	}
+	return u.email
 }

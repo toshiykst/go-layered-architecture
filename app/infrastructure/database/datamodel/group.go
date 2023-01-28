@@ -15,9 +15,9 @@ func NewGroup(gID model.GroupID, name string) *Group {
 }
 
 func ToGroupModel(g *Group, gus GroupUsers) *model.Group {
-	return &model.Group{
-		ID:      model.GroupID(g.ID),
-		Name:    g.Name,
-		UserIDs: gus.UserIDs(),
-	}
+	return model.NewGroup(
+		model.GroupID(g.ID),
+		g.Name,
+		gus.UserIDs(),
+	)
 }

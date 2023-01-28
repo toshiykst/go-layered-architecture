@@ -17,9 +17,9 @@ func NewUser(uID model.UserID, name, email string) *User {
 }
 
 func ToUserModel(u *User) *model.User {
-	return &model.User{
-		ID:    model.UserID(u.ID),
-		Name:  u.Name,
-		Email: u.Email,
-	}
+	return model.NewUser(
+		model.UserID(u.ID),
+		u.Name,
+		u.Email,
+	)
 }

@@ -1,12 +1,38 @@
 package model
 
-// GroupID is identifier for group.
 type GroupID string
 
-// Group is a user domain model.
-
 type Group struct {
-	ID      GroupID
-	Name    string
-	UserIDs []UserID
+	id      GroupID
+	name    string
+	userIDs []UserID
+}
+
+func NewGroup(id GroupID, name string, uIDs []UserID) *Group {
+	return &Group{
+		id:      id,
+		name:    name,
+		userIDs: uIDs,
+	}
+}
+
+func (g *Group) ID() GroupID {
+	if g == nil {
+		return ""
+	}
+	return g.id
+}
+
+func (g *Group) Name() string {
+	if g == nil {
+		return ""
+	}
+	return g.name
+}
+
+func (g *Group) UserIDs() []UserID {
+	if g == nil {
+		return nil
+	}
+	return g.userIDs
 }

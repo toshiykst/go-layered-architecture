@@ -24,7 +24,7 @@ func (db *dbUserRepository) List() ([]*model.User, error) {
 }
 
 func (db *dbUserRepository) Create(u *model.User) (*model.User, error) {
-	dmu := datamodel.NewUser(u.ID, u.Name, u.Name)
+	dmu := datamodel.NewUser(u.ID(), u.Name(), u.Email())
 
 	if err := db.conn.Create(dmu).Error; err != nil {
 		return nil, err
