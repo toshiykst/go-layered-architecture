@@ -2,11 +2,12 @@ package main
 
 import (
 	"context"
-	"os"
+	"log"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 
+	"github.com/toshiykst/go-layerd-architecture/app/env"
 	"github.com/toshiykst/go-layerd-architecture/app/handler"
 	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase"
@@ -20,13 +21,17 @@ func main() {
 
 	ctx := context.Background()
 
-	// TODO: Use env config
+	c, err := env.NewConfig()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	db := database.NewDBRepository(ctx, database.Config{
-		User:     os.Getenv("MYSQL_USER"),
-		Password: os.Getenv("MYSQL_PASSWORD"),
-		Host:     os.Getenv("MYSQL_HOST"),
-		DBName:   os.Getenv("MYSQL_DATABASE"),
-		Debug:    os.Getenv("MYSQL_DEBUG") == "true",
+		User:     c.DBUser,
+		Password: c.DBPassword,
+		Host:     c.DBHost,
+		DBName:   c.DBName,
+		Debug:    c.DBDebug,
 	})
 
 	uuc := usecase.NewUserUsecase(db)
