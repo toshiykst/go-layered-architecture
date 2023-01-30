@@ -3,6 +3,7 @@ module github.com/toshiykst/go-layerd-architecture
 go 1.19
 
 require (
+	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/labstack/echo v3.3.10+incompatible
 	gorm.io/driver/mysql v1.4.4
