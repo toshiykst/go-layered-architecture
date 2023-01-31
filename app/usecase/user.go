@@ -1,6 +1,25 @@
 package usecase
 
-import "github.com/toshiykst/go-layerd-architecture/app/domain/repository"
+import (
+	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
+	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
+)
+
+type UserUsecase interface {
+	CreateUser(in *CreateUserInput) (*CreateUserOutput, error)
+	GetUser(in *GetUserInput) (*GetUserOutput, error)
+	UpdateUser(in *UpdateUserInput) (*UpdateUserOutput, error)
+	DeleteUser(in *DeleteUserInput) (*DeleteUserOutput, error)
+}
+
+type userUsecase struct {
+	r repository.Repository
+	f factory.UserFactory
+}
+
+func NewUserUsecase(r repository.Repository, f factory.UserFactory) UserUsecase {
+	return &userUsecase{r: r, f: f}
+}
 
 type CreateUserInput struct {
 	Name  string
@@ -8,8 +27,31 @@ type CreateUserInput struct {
 }
 
 type CreateUserOutput struct {
-	Name  string
-	Email string
+	UserID string
+	Name   string
+	Email  string
+}
+
+func (uc *userUsecase) CreateUser(in *CreateUserInput) (*CreateUserOutput, error) {
+	u, err := uc.f.Create(in.Name, in.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = uc.r.RunTransaction(func(tx repository.Transaction) error {
+		if _, err := tx.User().Create(u); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return &CreateUserOutput{
+		UserID: string(u.ID()),
+		Name:   u.Name(),
+		Email:  u.Email(),
+	}, nil
 }
 
 type GetUserInput struct {
@@ -20,6 +62,10 @@ type GetUserOutput struct {
 	UserID string
 	Name   string
 	Email  string
+}
+
+func (uc *userUsecase) GetUser(in *GetUserInput) (*GetUserOutput, error) {
+	return &GetUserOutput{}, nil
 }
 
 type UpdateUserInput struct {
@@ -34,38 +80,15 @@ type UpdateUserOutput struct {
 	Email  string
 }
 
+func (uc *userUsecase) UpdateUser(in *UpdateUserInput) (*UpdateUserOutput, error) {
+	return &UpdateUserOutput{}, nil
+}
+
 type DeleteUserInput struct {
 	UserID string
 }
 
 type DeleteUserOutput struct {
-}
-
-type UserUsecase interface {
-	CreateUser(in *CreateUserInput) (*CreateUserOutput, error)
-	GetUser(in *GetUserInput) (*GetUserOutput, error)
-	UpdateUser(in *UpdateUserInput) (*UpdateUserOutput, error)
-	DeleteUser(in *DeleteUserInput) (*DeleteUserOutput, error)
-}
-
-type userUsecase struct {
-	r repository.Repository
-}
-
-func NewUserUsecase(r repository.Repository) UserUsecase {
-	return &userUsecase{r: r}
-}
-
-func (uc *userUsecase) CreateUser(in *CreateUserInput) (*CreateUserOutput, error) {
-	return &CreateUserOutput{}, nil
-}
-
-func (uc *userUsecase) GetUser(in *GetUserInput) (*GetUserOutput, error) {
-	return &GetUserOutput{}, nil
-}
-
-func (uc *userUsecase) UpdateUser(in *UpdateUserInput) (*UpdateUserOutput, error) {
-	return &UpdateUserOutput{}, nil
 }
 
 func (uc *userUsecase) DeleteUser(in *DeleteUserInput) (*DeleteUserOutput, error) {

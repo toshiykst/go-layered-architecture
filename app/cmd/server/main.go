@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 
+	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/env"
 	"github.com/toshiykst/go-layerd-architecture/app/handler"
 	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database"
@@ -34,7 +35,8 @@ func main() {
 		Debug:    c.DBDebug,
 	})
 
-	uuc := usecase.NewUserUsecase(db)
+	uf := factory.NewUserFactory()
+	uuc := usecase.NewUserUsecase(db, uf)
 	uh := handler.NewUserHandler(uuc)
 
 	e.GET("/users/:id", uh.GetUser)
