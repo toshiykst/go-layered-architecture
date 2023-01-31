@@ -63,14 +63,14 @@ func (r *dbRepository) RunTransaction(f func(repository.Transaction) error) erro
 }
 
 func (r *dbRepository) User() repository.UserRepositoryQuery {
-	return &dbUserRepository{}
+	return &dbUserRepository{db: r.db}
 }
 func (tx *dbTransaction) User() repository.UserRepositoryCommand {
-	return &dbUserRepository{}
+	return &dbUserRepository{db: tx.db}
 }
 func (r *dbRepository) Group() repository.GroupRepositoryQuery {
-	return &dbGroupRepository{}
+	return &dbGroupRepository{db: r.db}
 }
 func (tx *dbTransaction) Group() repository.GroupRepositoryCommand {
-	return &dbGroupRepository{}
+	return &dbGroupRepository{db: tx.db}
 }

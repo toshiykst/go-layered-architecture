@@ -7,7 +7,7 @@ import (
 )
 
 type dbGroupRepository struct {
-	conn *gorm.DB
+	db *gorm.DB
 }
 
 func (db *dbGroupRepository) Find(gID model.GroupID) (*model.Group, error) {

@@ -8,35 +8,35 @@ import (
 )
 
 type dbUserRepository struct {
-	conn *gorm.DB
+	db *gorm.DB
 }
 
-func (db *dbUserRepository) Find(uID model.UserID) (*model.User, error) {
+func (r *dbUserRepository) Find(uID model.UserID) (*model.User, error) {
 	return nil, nil
 }
 
-func (db *dbUserRepository) FindByName(name string) (*model.User, error) {
+func (r *dbUserRepository) FindByName(name string) (*model.User, error) {
 	return nil, nil
 }
 
-func (db *dbUserRepository) List() ([]*model.User, error) {
+func (r *dbUserRepository) List() ([]*model.User, error) {
 	return nil, nil
 }
 
-func (db *dbUserRepository) Create(u *model.User) (*model.User, error) {
+func (r *dbUserRepository) Create(u *model.User) (*model.User, error) {
 	dmu := datamodel.NewUser(u.ID(), u.Name(), u.Email())
 
-	if err := db.conn.Create(dmu).Error; err != nil {
+	if err := r.db.Create(dmu).Error; err != nil {
 		return nil, err
 	}
 
 	return datamodel.ToUserModel(dmu), nil
 }
 
-func (db *dbUserRepository) Update(u *model.User) error {
+func (r *dbUserRepository) Update(u *model.User) error {
 	return nil
 }
 
-func (db *dbUserRepository) Delete(id model.UserID) error {
+func (r *dbUserRepository) Delete(id model.UserID) error {
 	return nil
 }
