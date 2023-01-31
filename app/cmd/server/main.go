@@ -39,6 +39,7 @@ func main() {
 	uuc := usecase.NewUserUsecase(db, uf)
 	uh := handler.NewUserHandler(uuc)
 
+	e.POST("/users", uh.CreateUser)
 	e.GET("/users/:id", uh.GetUser)
 
 	e.Logger.Fatal(e.Start(":8080"))
