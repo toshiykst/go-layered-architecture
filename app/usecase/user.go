@@ -21,16 +21,18 @@ func NewUserUsecase(r repository.Repository, f factory.UserFactory) UserUsecase 
 	return &userUsecase{r: r, f: f}
 }
 
-type CreateUserInput struct {
-	Name  string
-	Email string
-}
+type (
+	CreateUserInput struct {
+		Name  string
+		Email string
+	}
 
-type CreateUserOutput struct {
-	UserID string
-	Name   string
-	Email  string
-}
+	CreateUserOutput struct {
+		UserID string
+		Name   string
+		Email  string
+	}
+)
 
 func (uc *userUsecase) CreateUser(in *CreateUserInput) (*CreateUserOutput, error) {
 	u, err := uc.f.Create(in.Name, in.Email)
@@ -54,42 +56,47 @@ func (uc *userUsecase) CreateUser(in *CreateUserInput) (*CreateUserOutput, error
 	}, nil
 }
 
-type GetUserInput struct {
-	UserID string
-}
+type (
+	GetUserInput struct {
+		UserID string
+	}
 
-type GetUserOutput struct {
-	UserID string
-	Name   string
-	Email  string
-}
+	GetUserOutput struct {
+		UserID string
+		Name   string
+		Email  string
+	}
+)
 
 func (uc *userUsecase) GetUser(in *GetUserInput) (*GetUserOutput, error) {
 	return &GetUserOutput{}, nil
 }
 
-type UpdateUserInput struct {
-	UserID string
-	Name   string
-	Email  string
-}
+type (
+	UpdateUserInput struct {
+		UserID string
+		Name   string
+		Email  string
+	}
 
-type UpdateUserOutput struct {
-	UserID string
-	Name   string
-	Email  string
-}
+	UpdateUserOutput struct {
+		UserID string
+		Name   string
+		Email  string
+	}
+)
 
 func (uc *userUsecase) UpdateUser(in *UpdateUserInput) (*UpdateUserOutput, error) {
 	return &UpdateUserOutput{}, nil
 }
 
-type DeleteUserInput struct {
-	UserID string
-}
+type (
+	DeleteUserInput struct {
+		UserID string
+	}
 
-type DeleteUserOutput struct {
-}
+	DeleteUserOutput struct{}
+)
 
 func (uc *userUsecase) DeleteUser(in *DeleteUserInput) (*DeleteUserOutput, error) {
 	return &DeleteUserOutput{}, nil
