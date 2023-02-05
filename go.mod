@@ -3,6 +3,7 @@ module github.com/toshiykst/go-layerd-architecture
 go 1.19
 
 require (
+	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
