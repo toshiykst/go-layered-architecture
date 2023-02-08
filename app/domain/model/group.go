@@ -36,3 +36,5 @@ func (g *Group) UserIDs() []UserID {
 	}
 	return g.userIDs
 }
+
+type Groups []*Groups

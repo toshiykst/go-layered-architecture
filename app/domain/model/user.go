@@ -36,3 +36,5 @@ func (u *User) Email() string {
 	}
 	return u.email
 }
+
+type Users []*User
