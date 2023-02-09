@@ -12,7 +12,7 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/testutil"
 )
 
-func TestDatabase_dbUserRepository_CreatePost(t *testing.T) {
+func TestDatabase_dbUserRepository_Create(t *testing.T) {
 	tests := []struct {
 		name    string
 		user    *model.User
