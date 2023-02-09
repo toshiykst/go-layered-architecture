@@ -18,16 +18,16 @@ type GroupUsers []*GroupUser
 
 func NewGroupUsers(gID model.GroupID, uIDs []model.UserID) GroupUsers {
 	gus := make(GroupUsers, len(uIDs))
-	for _, uID := range uIDs {
-		gus = append(gus, NewGroupUser(gID, uID))
+	for i, uID := range uIDs {
+		gus[i] = NewGroupUser(gID, uID)
 	}
 	return gus
 }
 
 func (gus GroupUsers) UserIDs() []model.UserID {
 	uIDs := make([]model.UserID, len(gus))
-	for _, v := range gus {
-		uIDs = append(uIDs, model.UserID(v.UserID))
+	for i, v := range gus {
+		uIDs[i] = model.UserID(v.UserID)
 	}
 	return uIDs
 }
