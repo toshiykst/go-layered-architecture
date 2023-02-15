@@ -22,7 +22,8 @@ func DBMock(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
 				DriverName:                "mysql",
 				Conn:                      db,
 				SkipInitializeWithVersion: true,
-			}},
+			},
+		},
 		&gorm.Config{
 			SkipDefaultTransaction: true,
 		},
