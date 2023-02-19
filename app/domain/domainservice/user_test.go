@@ -40,7 +40,7 @@ func TestUserService_Exists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			us := &UserService{r: tt.newMockRepository()}
+			us := &userService{r: tt.newMockRepository()}
 			got, err := us.Exists(tt.uID)
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
