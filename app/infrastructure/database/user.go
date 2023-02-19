@@ -1,6 +1,8 @@
 package database
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
@@ -12,7 +14,16 @@ type dbUserRepository struct {
 }
 
 func (r *dbUserRepository) Find(uID model.UserID) (*model.User, error) {
-	return nil, nil
+	dmu := &datamodel.User{ID: string(uID)}
+
+	if err := r.db.First(dmu).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return datamodel.ToUserModel(dmu), nil
 }
 
 func (r *dbUserRepository) FindByName(name string) (*model.User, error) {
