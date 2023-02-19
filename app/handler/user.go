@@ -54,18 +54,30 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 	})
 }
 
+type (
+	GetUserResponse struct {
+		UserID string `json:"user_id"`
+		Name   string `json:"name"`
+		Email  string `json:"email"`
+	}
+)
+
 func (h *userHandler) GetUser(c echo.Context) error {
 	id := c.Param("id")
-
 	in := &usecase.GetUserInput{
 		UserID: id,
 	}
 
 	out, err := h.uc.GetUser(in)
 	if err != nil {
+		// TODO: Returns 404 not found if the user does not exist.
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return err
 	}
 
-	return c.JSON(http.StatusOK, out)
+	return c.JSON(http.StatusOK, &GetUserResponse{
+		UserID: out.UserID,
+		Name:   out.Name,
+		Email:  out.Email,
+	})
 }
