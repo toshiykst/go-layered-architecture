@@ -2,8 +2,11 @@
 package usecase
 
 import (
+	"fmt"
+
 	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
+	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 )
 
@@ -76,7 +79,21 @@ type (
 )
 
 func (uc *userUsecase) GetUser(in *GetUserInput) (*GetUserOutput, error) {
-	return &GetUserOutput{}, nil
+	uID := model.UserID(in.UserID)
+
+	u, err := uc.r.User().Find(uID)
+	if err != nil {
+		return nil, err
+	}
+	if u == nil {
+		return nil, fmt.Errorf("the user is not found; userID=%s", uID)
+	}
+
+	return &GetUserOutput{
+		UserID: string(u.ID()),
+		Name:   u.Name(),
+		Email:  u.Email(),
+	}, nil
 }
 
 type (
