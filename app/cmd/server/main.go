@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 
+	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/env"
 	"github.com/toshiykst/go-layerd-architecture/app/handler"
@@ -36,7 +37,9 @@ func main() {
 	})
 
 	uf := factory.NewUserFactory()
-	uuc := usecase.NewUserUsecase(db, uf)
+	us := domainservice.NewUserService(db)
+	uuc := usecase.NewUserUsecase(db, uf, us)
+
 	uh := handler.NewUserHandler(uuc)
 
 	e.POST("/users", uh.CreateUser)

@@ -2,6 +2,7 @@
 package usecase
 
 import (
+	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 )
@@ -16,10 +17,15 @@ type UserUsecase interface {
 type userUsecase struct {
 	r repository.Repository
 	f factory.UserFactory
+	s domainservice.UserService
 }
 
-func NewUserUsecase(r repository.Repository, f factory.UserFactory) UserUsecase {
-	return &userUsecase{r: r, f: f}
+func NewUserUsecase(
+	r repository.Repository,
+	f factory.UserFactory,
+	s domainservice.UserService,
+) UserUsecase {
+	return &userUsecase{r: r, f: f, s: s}
 }
 
 type (
