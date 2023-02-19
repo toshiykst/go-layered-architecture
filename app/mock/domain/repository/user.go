@@ -9,6 +9,11 @@ type mockUserRepository struct {
 }
 
 func (r *mockUserRepository) Find(uID model.UserID) (*model.User, error) {
+	for _, u := range r.s.users {
+		if u.ID() == uID {
+			return u, nil
+		}
+	}
 	return nil, nil
 }
 
