@@ -131,7 +131,6 @@ func TestCreated(t *testing.T) {
 					gotBody, tt.wantBody, diff,
 				)
 			}
-
 		})
 	}
 }

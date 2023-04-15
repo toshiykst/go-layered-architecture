@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -106,7 +105,7 @@ func TestUserUsecase_GetUser(t *testing.T) {
 				UserID: "TEST_USER_ID",
 			},
 			want:    nil,
-			wantErr: fmt.Errorf("the user is not found; userID=%s", "TEST_USER_ID"),
+			wantErr: ErrUserNotFound,
 			newMockRepository: func() repository.Repository {
 				s := mockrepository.NewStore()
 				r := mockrepository.NewMockRepository(s)
