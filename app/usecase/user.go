@@ -2,7 +2,9 @@
 package usecase
 
 import (
-	"fmt"
+	"errors"
+
+	"github.com/labstack/gommon/log"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
@@ -30,6 +32,10 @@ func NewUserUsecase(
 ) UserUsecase {
 	return &userUsecase{r: r, f: f, s: s}
 }
+
+var (
+	ErrUserNotFound = errors.New("user not found")
+)
 
 type (
 	CreateUserInput struct {
@@ -86,7 +92,9 @@ func (uc *userUsecase) GetUser(in *GetUserInput) (*GetUserOutput, error) {
 		return nil, err
 	}
 	if u == nil {
-		return nil, fmt.Errorf("the user is not found; userID=%s", uID)
+		// TODO: Use custom logger(zap)
+		log.Warnf("the user is not found; userID=%s", uID)
+		return nil, ErrUserNotFound
 	}
 
 	return &GetUserOutput{

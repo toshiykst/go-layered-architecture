@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/labstack/echo"
 
+	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase"
 )
 
@@ -12,7 +14,6 @@ type userHandler struct {
 	uc usecase.UserUsecase
 }
 
-// NewUserHandler returns a user handler struct.
 func NewUserHandler(uc usecase.UserUsecase) *userHandler {
 	return &userHandler{uc: uc}
 }
@@ -33,8 +34,7 @@ type (
 func (h *userHandler) CreateUser(c echo.Context) error {
 	req := &CreateUserRequest{}
 	if err := c.Bind(req); err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
-		return err
+		return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
 	}
 
 	in := &usecase.CreateUserInput{
@@ -43,11 +43,10 @@ func (h *userHandler) CreateUser(c echo.Context) error {
 	}
 	out, err := h.uc.CreateUser(in)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return err
+		return response.ErrorInternal(c, err)
 	}
 
-	return c.JSON(http.StatusCreated, &CreateUserResponse{
+	return response.Created(c, &CreateUserResponse{
 		UserID: out.UserID,
 		Name:   out.Name,
 		Email:  out.Email,
@@ -70,12 +69,14 @@ func (h *userHandler) GetUser(c echo.Context) error {
 
 	out, err := h.uc.GetUser(in)
 	if err != nil {
-		// TODO: Returns 404 not found if the user does not exist.
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return err
+		if errors.Is(err, usecase.ErrUserNotFound) {
+			return response.Error(c, response.ErrorCodeUserNotFound, http.StatusNotFound, err)
+		} else {
+			return response.ErrorInternal(c, err)
+		}
 	}
 
-	return c.JSON(http.StatusOK, &GetUserResponse{
+	return response.OK(c, &GetUserResponse{
 		UserID: out.UserID,
 		Name:   out.Name,
 		Email:  out.Email,
