@@ -10,12 +10,12 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/usecase"
 )
 
-type userHandler struct {
+type UserHandler struct {
 	uc usecase.UserUsecase
 }
 
-func NewUserHandler(uc usecase.UserUsecase) *userHandler {
-	return &userHandler{uc: uc}
+func NewUserHandler(uc usecase.UserUsecase) *UserHandler {
+	return &UserHandler{uc: uc}
 }
 
 type (
@@ -31,7 +31,7 @@ type (
 	}
 )
 
-func (h *userHandler) CreateUser(c echo.Context) error {
+func (h *UserHandler) CreateUser(c echo.Context) error {
 	req := &CreateUserRequest{}
 	if err := c.Bind(req); err != nil {
 		return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
@@ -61,7 +61,7 @@ type (
 	}
 )
 
-func (h *userHandler) GetUser(c echo.Context) error {
+func (h *UserHandler) GetUser(c echo.Context) error {
 	id := c.Param("id")
 	in := &usecase.GetUserInput{
 		UserID: id,
