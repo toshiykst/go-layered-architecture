@@ -44,23 +44,23 @@ func TestNewGroup(t *testing.T) {
 	}
 }
 
-func TestToGroupModel(t *testing.T) {
+func TestGroup_ToModel(t *testing.T) {
 	type args struct {
-		g   *Group
 		gus GroupUsers
 	}
 	tests := []struct {
-		name string
-		args args
-		want *model.Group
+		name  string
+		group *Group
+		args  args
+		want  *model.Group
 	}{
 		{
 			name: "Convert to model.Group",
+			group: &Group{
+				ID:   "TEST_GROUP_ID",
+				Name: "TEST_GROUP_NAME",
+			},
 			args: args{
-				g: &Group{
-					ID:   "TEST_GROUP_ID",
-					Name: "TEST_GROUP_NAME",
-				},
 				gus: GroupUsers{
 					{
 						GroupID: "TEST_GROUP_ID",
@@ -86,15 +86,20 @@ func TestToGroupModel(t *testing.T) {
 				},
 			),
 		},
+		{
+			name:  "Returns nil when the receiver is nil",
+			group: nil,
+			want:  nil,
+		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ToGroupModel(tt.args.g, tt.args.gus)
+			g := tt.group
+			got := g.ToModel(tt.args.gus)
 			if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.Group{})); diff != "" {
 				t.Errorf(
-					"ToGroupModel(%v,%v)=%v; want %v\ndiffers: (-got +want)\n%s",
-					tt.args.g, tt.args.gus, got, tt.want, diff,
+					"g.ToModel(%v)=%v; want=%v,receiver=%v\ndiffers: (-got +want)\n%s",
+					tt.args.gus, got, tt.want, g, diff,
 				)
 			}
 		})

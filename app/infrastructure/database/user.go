@@ -23,7 +23,7 @@ func (r *dbUserRepository) Find(uID model.UserID) (*model.User, error) {
 		return nil, err
 	}
 
-	return datamodel.ToUserModel(dmu), nil
+	return dmu.ToModel(), nil
 }
 
 func (r *dbUserRepository) FindByName(name string) (*model.User, error) {
@@ -41,7 +41,7 @@ func (r *dbUserRepository) Create(u *model.User) (*model.User, error) {
 		return nil, err
 	}
 
-	return datamodel.ToUserModel(dmu), nil
+	return dmu.ToModel(), nil
 }
 
 func (r *dbUserRepository) Update(u *model.User) error {

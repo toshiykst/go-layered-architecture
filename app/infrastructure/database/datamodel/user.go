@@ -16,7 +16,10 @@ func NewUser(uID model.UserID, name, email string) *User {
 	}
 }
 
-func ToUserModel(u *User) *model.User {
+func (u *User) ToModel() *model.User {
+	if u == nil {
+		return nil
+	}
 	return model.NewUser(
 		model.UserID(u.ID),
 		u.Name,

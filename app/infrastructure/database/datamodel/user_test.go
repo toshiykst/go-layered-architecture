@@ -47,30 +47,35 @@ func TestNewUser(t *testing.T) {
 	}
 }
 
-func TestToUserModel(t *testing.T) {
+func TestUser_ToUserModel(t *testing.T) {
 	tests := []struct {
 		name string
-		args *User
+		user *User
 		want *model.User
 	}{
 		{
 			name: "Convert to model.User",
-			args: &User{
+			user: &User{
 				ID:    "TEST_USER_ID",
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
 			},
 			want: model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
 		},
+		{
+			name: "Returns nil when the receiver is nil",
+			user: nil,
+			want: nil,
+		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ToUserModel(tt.args)
+			u := tt.user
+			got := u.ToModel()
 			if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.User{})); diff != "" {
 				t.Errorf(
-					"TestToUserModel(%v)=%v; want %v\ndiffers: (-got +want)\n%s",
-					tt.args, got, tt.want, diff,
+					"u.ToModel()=%v; want=%v,receiver=%v\ndiffers: (-got +want)\n%s",
+					got, tt.want, u, diff,
 				)
 			}
 		})

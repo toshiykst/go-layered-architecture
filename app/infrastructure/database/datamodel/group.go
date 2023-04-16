@@ -14,7 +14,10 @@ func NewGroup(gID model.GroupID, name string) *Group {
 	}
 }
 
-func ToGroupModel(g *Group, gus GroupUsers) *model.Group {
+func (g *Group) ToModel(gus GroupUsers) *model.Group {
+	if g == nil {
+		return nil
+	}
 	return model.NewGroup(
 		model.GroupID(g.ID),
 		g.Name,
