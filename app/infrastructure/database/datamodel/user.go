@@ -29,7 +29,7 @@ func (u *User) ToModel() *model.User {
 
 type Users []*User
 
-func (us Users) ToModel() []*model.User {
+func (us Users) ToModel() model.Users {
 	if us == nil {
 		return nil
 	}

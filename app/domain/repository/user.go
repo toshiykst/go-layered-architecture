@@ -8,7 +8,7 @@ import (
 type UserRepositoryQuery interface {
 	Find(id model.UserID) (*model.User, error)
 	FindByName(name string) (*model.User, error)
-	List() ([]*model.User, error)
+	List() (model.Users, error)
 }
 
 // UserRepositoryCommand is interface for query and command methods of user.

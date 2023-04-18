@@ -21,8 +21,8 @@ func (r *mockUserRepository) FindByName(name string) (*model.User, error) {
 	return nil, nil
 }
 
-func (r *mockUserRepository) List() ([]*model.User, error) {
-	return nil, nil
+func (r *mockUserRepository) List() (model.Users, error) {
+	return r.s.users, nil
 }
 
 func (r *mockUserRepository) Create(u *model.User) (*model.User, error) {

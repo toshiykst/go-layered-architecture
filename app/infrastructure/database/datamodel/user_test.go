@@ -107,7 +107,7 @@ func TestUsers_ToModel(t *testing.T) {
 					Email: "TEST_USER_EMAIL_3",
 				},
 			},
-			want: []*model.User{
+			want: model.Users{
 				model.NewUser(
 					"TEST_USER_ID_1",
 					"TEST_USER_NAME_1",
