@@ -26,3 +26,20 @@ func (u *User) ToModel() *model.User {
 		u.Email,
 	)
 }
+
+type Users []*User
+
+func (us Users) ToModel() []*model.User {
+	if us == nil {
+		return nil
+	}
+	mus := make([]*model.User, len(us))
+	for i, u := range us {
+		mus[i] = model.NewUser(
+			model.UserID(u.ID),
+			u.Name,
+			u.Email,
+		)
+	}
+	return mus
+}
