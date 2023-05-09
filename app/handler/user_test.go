@@ -57,9 +57,11 @@ func TestUserHandler_CreateUser(t *testing.T) {
 					CreateUser(gomock.Any()).
 					DoAndReturn(func(in *dto.CreateUserInput) (*dto.CreateUserOutput, error) {
 						return &dto.CreateUserOutput{
-							UserID: "TEST_USER_ID",
-							Name:   in.Name,
-							Email:  in.Email,
+							User: dto.User{
+								UserID: "TEST_USER_ID",
+								Name:   in.Name,
+								Email:  in.Email,
+							},
 						}, nil
 					})
 				return uc
@@ -182,9 +184,11 @@ func TestUserHandler_GetUser(t *testing.T) {
 					GetUser(gomock.Any()).
 					DoAndReturn(func(in *dto.GetUserInput) (*dto.GetUserOutput, error) {
 						return &dto.GetUserOutput{
-							UserID: in.UserID,
-							Name:   "TEST_USER_NAME",
-							Email:  "TEST_USER_EMAIL",
+							User: dto.User{
+								UserID: in.UserID,
+								Name:   "TEST_USER_NAME",
+								Email:  "TEST_USER_EMAIL",
+							},
 						}, nil
 					})
 				return uc

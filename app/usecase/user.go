@@ -54,9 +54,11 @@ func (uc *userUsecase) CreateUser(in *dto.CreateUserInput) (*dto.CreateUserOutpu
 	}
 
 	return &dto.CreateUserOutput{
-		UserID: string(u.ID()),
-		Name:   u.Name(),
-		Email:  u.Email(),
+		User: dto.User{
+			UserID: string(u.ID()),
+			Name:   u.Name(),
+			Email:  u.Email(),
+		},
 	}, nil
 }
 
@@ -74,9 +76,11 @@ func (uc *userUsecase) GetUser(in *dto.GetUserInput) (*dto.GetUserOutput, error)
 	}
 
 	return &dto.GetUserOutput{
-		UserID: string(u.ID()),
-		Name:   u.Name(),
-		Email:  u.Email(),
+		User: dto.User{
+			UserID: string(u.ID()),
+			Name:   u.Name(),
+			Email:  u.Email(),
+		},
 	}, nil
 }
 

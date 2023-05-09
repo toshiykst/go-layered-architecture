@@ -8,8 +8,6 @@ type (
 	}
 
 	UpdateUserOutput struct {
-		UserID string
-		Name   string
-		Email  string
+		User User
 	}
 )

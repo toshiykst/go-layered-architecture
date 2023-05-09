@@ -48,9 +48,9 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	}
 
 	return response.Created(c, &CreateUserResponse{
-		UserID: out.UserID,
-		Name:   out.Name,
-		Email:  out.Email,
+		UserID: out.User.UserID,
+		Name:   out.User.Name,
+		Email:  out.User.Email,
 	})
 }
 
@@ -78,8 +78,8 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 	}
 
 	return response.OK(c, &GetUserResponse{
-		UserID: out.UserID,
-		Name:   out.Name,
-		Email:  out.Email,
+		UserID: out.User.UserID,
+		Name:   out.User.Name,
+		Email:  out.User.Email,
 	})
 }

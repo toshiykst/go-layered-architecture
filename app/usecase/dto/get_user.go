@@ -6,8 +6,6 @@ type (
 	}
 
 	GetUserOutput struct {
-		UserID string
-		Name   string
-		Email  string
+		User User
 	}
 )

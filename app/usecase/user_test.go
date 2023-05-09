@@ -32,9 +32,11 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 				Email: "TEST_USER_EMAIL",
 			},
 			want: &dto.CreateUserOutput{
-				UserID: "TEST_USER_ID",
-				Name:   "TEST_USER_NAME",
-				Email:  "TEST_USER_EMAIL",
+				User: dto.User{
+					UserID: "TEST_USER_ID",
+					Name:   "TEST_USER_NAME",
+					Email:  "TEST_USER_EMAIL",
+				},
 			},
 			newMockRepository: func() repository.Repository {
 				s := mockrepository.NewStore()
@@ -88,9 +90,11 @@ func TestUserUsecase_GetUser(t *testing.T) {
 				UserID: "TEST_USER_ID",
 			},
 			want: &dto.GetUserOutput{
-				UserID: "TEST_USER_ID",
-				Name:   "TEST_USER_NAME",
-				Email:  "TEST_USER_EMAIL",
+				User: dto.User{
+					UserID: "TEST_USER_ID",
+					Name:   "TEST_USER_NAME",
+					Email:  "TEST_USER_EMAIL",
+				},
 			},
 			wantErr: nil,
 			newMockRepository: func() repository.Repository {
