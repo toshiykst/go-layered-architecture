@@ -79,6 +79,21 @@ func (mr *MockUserUsecaseMockRecorder) GetUser(in interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUser", reflect.TypeOf((*MockUserUsecase)(nil).GetUser), in)
 }
 
+// GetUsers mocks base method.
+func (m *MockUserUsecase) GetUsers(in *dto.GetUsersInput) (*dto.GetUsersOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsers", in)
+	ret0, _ := ret[0].(*dto.GetUsersOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockUserUsecaseMockRecorder) GetUsers(in interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockUserUsecase)(nil).GetUsers), in)
+}
+
 // UpdateUser mocks base method.
 func (m *MockUserUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
 	m.ctrl.T.Helper()

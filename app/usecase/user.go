@@ -16,6 +16,7 @@ import (
 type UserUsecase interface {
 	CreateUser(in *dto.CreateUserInput) (*dto.CreateUserOutput, error)
 	GetUser(in *dto.GetUserInput) (*dto.GetUserOutput, error)
+	GetUsers(in *dto.GetUsersInput) (*dto.GetUsersOutput, error)
 	UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error)
 	DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error)
 }
@@ -82,6 +83,29 @@ func (uc *userUsecase) GetUser(in *dto.GetUserInput) (*dto.GetUserOutput, error)
 			Email:  u.Email(),
 		},
 	}, nil
+}
+
+func (uc *userUsecase) GetUsers(_ *dto.GetUsersInput) (*dto.GetUsersOutput, error) {
+	us, err := uc.r.User().List()
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.GetUsersOutput{
+		Users: convertUsersToDTO(us),
+	}, nil
+}
+
+func convertUsersToDTO(us model.Users) []dto.User {
+	result := make([]dto.User, len(us))
+	for i, u := range us {
+		result[i] = dto.User{
+			UserID: string(u.ID()),
+			Name:   u.Name(),
+			Email:  u.Email(),
+		}
+	}
+	return result
 }
 
 func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
