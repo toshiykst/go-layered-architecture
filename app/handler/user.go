@@ -83,3 +83,29 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 		},
 	})
 }
+
+type (
+	GetUsersResponse struct {
+		Users []response.User `json:"users"`
+	}
+)
+
+func (h *UserHandler) GetUsers(c echo.Context) error {
+	out, err := h.uc.GetUsers(nil)
+	if err != nil {
+		return response.ErrorInternal(c, err)
+	}
+
+	us := make([]response.User, len(out.Users))
+	for i, ou := range out.Users {
+		us[i] = response.User{
+			UserID: ou.UserID,
+			Name:   ou.Name,
+			Email:  ou.Email,
+		}
+	}
+
+	return response.OK(c, &GetUsersResponse{
+		Users: us,
+	})
+}
