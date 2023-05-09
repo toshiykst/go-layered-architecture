@@ -13,24 +13,25 @@ import (
 	mockdomainservice "github.com/toshiykst/go-layerd-architecture/app/mock/domain/domainservice"
 	mockfactory "github.com/toshiykst/go-layerd-architecture/app/mock/domain/factory"
 	mockrepository "github.com/toshiykst/go-layerd-architecture/app/mock/domain/repository"
+	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
 func TestUserUsecase_CreateUser(t *testing.T) {
 	tests := []struct {
 		name              string
-		in                *CreateUserInput
-		want              *CreateUserOutput
+		in                *dto.CreateUserInput
+		want              *dto.CreateUserOutput
 		newMockRepository func() repository.Repository
 		newMockFactory    func(ctrl *gomock.Controller) factory.UserFactory
 		wantErr           error
 	}{
 		{
 			name: "Creates a new user",
-			in: &CreateUserInput{
+			in: &dto.CreateUserInput{
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
 			},
-			want: &CreateUserOutput{
+			want: &dto.CreateUserOutput{
 				UserID: "TEST_USER_ID",
 				Name:   "TEST_USER_NAME",
 				Email:  "TEST_USER_EMAIL",
@@ -76,17 +77,17 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 func TestUserUsecase_GetUser(t *testing.T) {
 	tests := []struct {
 		name              string
-		in                *GetUserInput
-		want              *GetUserOutput
+		in                *dto.GetUserInput
+		want              *dto.GetUserOutput
 		wantErr           error
 		newMockRepository func() repository.Repository
 	}{
 		{
 			name: "Returns a user",
-			in: &GetUserInput{
+			in: &dto.GetUserInput{
 				UserID: "TEST_USER_ID",
 			},
-			want: &GetUserOutput{
+			want: &dto.GetUserOutput{
 				UserID: "TEST_USER_ID",
 				Name:   "TEST_USER_NAME",
 				Email:  "TEST_USER_EMAIL",
@@ -101,7 +102,7 @@ func TestUserUsecase_GetUser(t *testing.T) {
 		},
 		{
 			name: "Returns error if the user does not exist",
-			in: &GetUserInput{
+			in: &dto.GetUserInput{
 				UserID: "TEST_USER_ID",
 			},
 			want:    nil,

@@ -8,6 +8,7 @@ import (
 
 	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase"
+	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
 type UserHandler struct {
@@ -37,7 +38,7 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
 	}
 
-	in := &usecase.CreateUserInput{
+	in := &dto.CreateUserInput{
 		Name:  req.Name,
 		Email: req.Email,
 	}
@@ -63,7 +64,7 @@ type (
 
 func (h *UserHandler) GetUser(c echo.Context) error {
 	id := c.Param("id")
-	in := &usecase.GetUserInput{
+	in := &dto.GetUserInput{
 		UserID: id,
 	}
 

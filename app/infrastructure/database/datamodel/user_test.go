@@ -86,7 +86,7 @@ func TestUsers_ToModel(t *testing.T) {
 	tests := []struct {
 		name  string
 		users Users
-		want  []*model.User
+		want  model.Users
 	}{
 		{
 			name: "Convert to model.User slice",

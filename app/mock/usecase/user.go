@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	usecase "github.com/toshiykst/go-layerd-architecture/app/usecase"
+	dto "github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
 // MockUserUsecase is a mock of UserUsecase interface.
@@ -35,10 +35,10 @@ func (m *MockUserUsecase) EXPECT() *MockUserUsecaseMockRecorder {
 }
 
 // CreateUser mocks base method.
-func (m *MockUserUsecase) CreateUser(in *usecase.CreateUserInput) (*usecase.CreateUserOutput, error) {
+func (m *MockUserUsecase) CreateUser(in *dto.CreateUserInput) (*dto.CreateUserOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateUser", in)
-	ret0, _ := ret[0].(*usecase.CreateUserOutput)
+	ret0, _ := ret[0].(*dto.CreateUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,10 +50,10 @@ func (mr *MockUserUsecaseMockRecorder) CreateUser(in interface{}) *gomock.Call {
 }
 
 // DeleteUser mocks base method.
-func (m *MockUserUsecase) DeleteUser(in *usecase.DeleteUserInput) (*usecase.DeleteUserOutput, error) {
+func (m *MockUserUsecase) DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUser", in)
-	ret0, _ := ret[0].(*usecase.DeleteUserOutput)
+	ret0, _ := ret[0].(*dto.DeleteUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +65,10 @@ func (mr *MockUserUsecaseMockRecorder) DeleteUser(in interface{}) *gomock.Call {
 }
 
 // GetUser mocks base method.
-func (m *MockUserUsecase) GetUser(in *usecase.GetUserInput) (*usecase.GetUserOutput, error) {
+func (m *MockUserUsecase) GetUser(in *dto.GetUserInput) (*dto.GetUserOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUser", in)
-	ret0, _ := ret[0].(*usecase.GetUserOutput)
+	ret0, _ := ret[0].(*dto.GetUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -80,10 +80,10 @@ func (mr *MockUserUsecaseMockRecorder) GetUser(in interface{}) *gomock.Call {
 }
 
 // UpdateUser mocks base method.
-func (m *MockUserUsecase) UpdateUser(in *usecase.UpdateUserInput) (*usecase.UpdateUserOutput, error) {
+func (m *MockUserUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateUser", in)
-	ret0, _ := ret[0].(*usecase.UpdateUserOutput)
+	ret0, _ := ret[0].(*dto.UpdateUserOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

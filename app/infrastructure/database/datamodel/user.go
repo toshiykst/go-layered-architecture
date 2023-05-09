@@ -33,7 +33,7 @@ func (us Users) ToModel() model.Users {
 	if us == nil {
 		return nil
 	}
-	mus := make([]*model.User, len(us))
+	mus := make(model.Users, len(us))
 	for i, u := range us {
 		mus[i] = model.NewUser(
 			model.UserID(u.ID),

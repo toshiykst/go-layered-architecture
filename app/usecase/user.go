@@ -10,13 +10,14 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
+	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
 type UserUsecase interface {
-	CreateUser(in *CreateUserInput) (*CreateUserOutput, error)
-	GetUser(in *GetUserInput) (*GetUserOutput, error)
-	UpdateUser(in *UpdateUserInput) (*UpdateUserOutput, error)
-	DeleteUser(in *DeleteUserInput) (*DeleteUserOutput, error)
+	CreateUser(in *dto.CreateUserInput) (*dto.CreateUserOutput, error)
+	GetUser(in *dto.GetUserInput) (*dto.GetUserOutput, error)
+	UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error)
+	DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error)
 }
 
 type userUsecase struct {
@@ -37,20 +38,7 @@ var (
 	ErrUserNotFound = errors.New("user not found")
 )
 
-type (
-	CreateUserInput struct {
-		Name  string
-		Email string
-	}
-
-	CreateUserOutput struct {
-		UserID string
-		Name   string
-		Email  string
-	}
-)
-
-func (uc *userUsecase) CreateUser(in *CreateUserInput) (*CreateUserOutput, error) {
+func (uc *userUsecase) CreateUser(in *dto.CreateUserInput) (*dto.CreateUserOutput, error) {
 	u, err := uc.f.Create(in.Name, in.Email)
 	if err != nil {
 		return nil, err
@@ -65,26 +53,14 @@ func (uc *userUsecase) CreateUser(in *CreateUserInput) (*CreateUserOutput, error
 		return nil, err
 	}
 
-	return &CreateUserOutput{
+	return &dto.CreateUserOutput{
 		UserID: string(u.ID()),
 		Name:   u.Name(),
 		Email:  u.Email(),
 	}, nil
 }
 
-type (
-	GetUserInput struct {
-		UserID string
-	}
-
-	GetUserOutput struct {
-		UserID string
-		Name   string
-		Email  string
-	}
-)
-
-func (uc *userUsecase) GetUser(in *GetUserInput) (*GetUserOutput, error) {
+func (uc *userUsecase) GetUser(in *dto.GetUserInput) (*dto.GetUserOutput, error) {
 	uID := model.UserID(in.UserID)
 
 	u, err := uc.r.User().Find(uID)
@@ -97,39 +73,17 @@ func (uc *userUsecase) GetUser(in *GetUserInput) (*GetUserOutput, error) {
 		return nil, ErrUserNotFound
 	}
 
-	return &GetUserOutput{
+	return &dto.GetUserOutput{
 		UserID: string(u.ID()),
 		Name:   u.Name(),
 		Email:  u.Email(),
 	}, nil
 }
 
-type (
-	UpdateUserInput struct {
-		UserID string
-		Name   string
-		Email  string
-	}
-
-	UpdateUserOutput struct {
-		UserID string
-		Name   string
-		Email  string
-	}
-)
-
-func (uc *userUsecase) UpdateUser(in *UpdateUserInput) (*UpdateUserOutput, error) {
-	return &UpdateUserOutput{}, nil
+func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
+	return &dto.UpdateUserOutput{}, nil
 }
 
-type (
-	DeleteUserInput struct {
-		UserID string
-	}
-
-	DeleteUserOutput struct{}
-)
-
-func (uc *userUsecase) DeleteUser(in *DeleteUserInput) (*DeleteUserOutput, error) {
-	return &DeleteUserOutput{}, nil
+func (uc *userUsecase) DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error) {
+	return &dto.DeleteUserOutput{}, nil
 }

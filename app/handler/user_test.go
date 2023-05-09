@@ -17,6 +17,7 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 	mockusecase "github.com/toshiykst/go-layerd-architecture/app/mock/usecase"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase"
+	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
 func TestNewUserHandler(t *testing.T) {
@@ -54,8 +55,8 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				uc := mockusecase.NewMockUserUsecase(ctrl)
 				uc.EXPECT().
 					CreateUser(gomock.Any()).
-					DoAndReturn(func(in *usecase.CreateUserInput) (*usecase.CreateUserOutput, error) {
-						return &usecase.CreateUserOutput{
+					DoAndReturn(func(in *dto.CreateUserInput) (*dto.CreateUserOutput, error) {
+						return &dto.CreateUserOutput{
 							UserID: "TEST_USER_ID",
 							Name:   in.Name,
 							Email:  in.Email,
@@ -179,8 +180,8 @@ func TestUserHandler_GetUser(t *testing.T) {
 				uc := mockusecase.NewMockUserUsecase(ctrl)
 				uc.EXPECT().
 					GetUser(gomock.Any()).
-					DoAndReturn(func(in *usecase.GetUserInput) (*usecase.GetUserOutput, error) {
-						return &usecase.GetUserOutput{
+					DoAndReturn(func(in *dto.GetUserInput) (*dto.GetUserOutput, error) {
+						return &dto.GetUserOutput{
 							UserID: in.UserID,
 							Name:   "TEST_USER_NAME",
 							Email:  "TEST_USER_EMAIL",
