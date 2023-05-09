@@ -26,9 +26,7 @@ type (
 	}
 
 	CreateUserResponse struct {
-		UserID string `json:"user_id"`
-		Name   string `json:"name"`
-		Email  string `json:"email"`
+		User response.User `json:"user"`
 	}
 )
 
@@ -48,17 +46,17 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	}
 
 	return response.Created(c, &CreateUserResponse{
-		UserID: out.User.UserID,
-		Name:   out.User.Name,
-		Email:  out.User.Email,
+		User: response.User{
+			UserID: out.User.UserID,
+			Name:   out.User.Name,
+			Email:  out.User.Email,
+		},
 	})
 }
 
 type (
 	GetUserResponse struct {
-		UserID string `json:"user_id"`
-		Name   string `json:"name"`
-		Email  string `json:"email"`
+		User response.User `json:"user"`
 	}
 )
 
@@ -78,8 +76,10 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 	}
 
 	return response.OK(c, &GetUserResponse{
-		UserID: out.User.UserID,
-		Name:   out.User.Name,
-		Email:  out.User.Email,
+		User: response.User{
+			UserID: out.User.UserID,
+			Name:   out.User.Name,
+			Email:  out.User.Email,
+		},
 	})
 }

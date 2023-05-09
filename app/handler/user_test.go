@@ -68,9 +68,11 @@ func TestUserHandler_CreateUser(t *testing.T) {
 			},
 			wantStatus: http.StatusCreated,
 			wantRes: &CreateUserResponse{
-				UserID: "TEST_USER_ID",
-				Name:   "TEST_USER_NAME",
-				Email:  "TEST_USER_EMAIL",
+				User: response.User{
+					UserID: "TEST_USER_ID",
+					Name:   "TEST_USER_NAME",
+					Email:  "TEST_USER_EMAIL",
+				},
 			},
 			wantErrRes: nil,
 		},
@@ -195,9 +197,11 @@ func TestUserHandler_GetUser(t *testing.T) {
 			},
 			wantStatus: http.StatusOK,
 			wantRes: &GetUserResponse{
-				UserID: "TEST_USER_ID",
-				Name:   "TEST_USER_NAME",
-				Email:  "TEST_USER_EMAIL",
+				User: response.User{
+					UserID: "TEST_USER_ID",
+					Name:   "TEST_USER_NAME",
+					Email:  "TEST_USER_EMAIL",
+				},
 			},
 			wantErrRes: nil,
 		},
