@@ -253,3 +253,59 @@ func TestDatabase_dbUserRepository_Create(t *testing.T) {
 		})
 	}
 }
+
+func TestDatabase_dbUserRepository_Update(t *testing.T) {
+	tests := []struct {
+		name    string
+		user    *model.User
+		wantErr error
+	}{
+		{
+			name:    "Creates a new user",
+			user:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			wantErr: nil,
+		},
+		{
+			name:    "Error",
+			user:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			wantErr: errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			expectExec := mock.
+				ExpectExec(regexp.QuoteMeta("UPDATE `users` SET `name`=?,`email`=? WHERE `id`=?")).
+				WithArgs(tt.user.Name(), tt.user.Email(), tt.user.ID())
+
+			if tt.wantErr != nil {
+				expectExec.WillReturnError(tt.wantErr)
+			} else {
+				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			r := &dbUserRepository{db: db}
+			err = r.Update(tt.user)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no errpr, but has error %v", err)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}

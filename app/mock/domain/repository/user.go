@@ -1,6 +1,8 @@
 package mockrepository
 
 import (
+	"errors"
+
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 )
 
@@ -31,6 +33,17 @@ func (r *mockUserRepository) Create(u *model.User) (*model.User, error) {
 }
 
 func (r *mockUserRepository) Update(u *model.User) error {
+	if u.ID() == "" {
+		return errors.New("user id must not be empty")
+	}
+
+	for i, user := range r.s.users {
+		if user.ID() == u.ID() {
+			r.s.users[i] = u
+			break
+		}
+	}
+
 	return nil
 }
 
