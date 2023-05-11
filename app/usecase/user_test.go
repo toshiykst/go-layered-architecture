@@ -238,3 +238,61 @@ func TestUserUsecase_GetUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestUserUsecase_UpdateUser(t *testing.T) {
+	tests := []struct {
+		name              string
+		in                *dto.UpdateUserInput
+		wantUser          *model.User
+		newMockRepository func() repository.Repository
+		wantErr           error
+	}{
+		{
+			name: "Update a user",
+			in: &dto.UpdateUserInput{
+				UserID: "TEST_USER_ID",
+				Name:   "TEST_USER_NAME_UPDATED",
+				Email:  "TEST_USER_EMAIL_UPDATED",
+			},
+			wantUser: model.NewUser(
+				"TEST_USER_ID",
+				"TEST_USER_NAME_UPDATED",
+				"TEST_USER_EMAIL_UPDATED",
+			),
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			f := mockfactory.NewMockUserFactory(ctrl)
+			r := tt.newMockRepository()
+
+			uc := NewUserUsecase(
+				r, f,
+				mockdomainservice.NewMockUserService(ctrl),
+			)
+			_, err := uc.UpdateUser(tt.in)
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+
+			uID := model.UserID(tt.in.UserID)
+			got, _ := r.User().Find(uID)
+			if diff := cmp.Diff(got, tt.wantUser, cmp.AllowUnexported(model.User{})); diff != "" {
+				t.Errorf(
+					"r.User().Find(%s)=%v, _; want %v, nil\ndiffers: (-got +want)\n%s",
+					uID, got, tt.wantUser, diff,
+				)
+			}
+		})
+	}
+}

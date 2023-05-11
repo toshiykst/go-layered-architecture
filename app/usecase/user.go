@@ -109,6 +109,17 @@ func convertUsersToDTO(us model.Users) []dto.User {
 }
 
 func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
+	u := model.NewUser(model.UserID(in.UserID), in.Name, in.Email)
+
+	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
+		if err := tx.User().Update(u); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
 	return &dto.UpdateUserOutput{}, nil
 }
 

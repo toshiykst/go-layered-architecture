@@ -7,7 +7,5 @@ type (
 		Email  string
 	}
 
-	UpdateUserOutput struct {
-		User User
-	}
+	UpdateUserOutput struct{}
 )
