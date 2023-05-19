@@ -134,3 +134,39 @@ func TestCreated(t *testing.T) {
 		})
 	}
 }
+
+func TestNoContent(t *testing.T) {
+	tests := []struct {
+		name           string
+		wantStatusCode int
+	}{
+		{
+			name:           "Respond with http status no content",
+			wantStatusCode: http.StatusNoContent,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			e := echo.New()
+			req := httptest.NewRequest(
+				http.MethodGet,
+				"https://example.com:8080/test",
+				nil,
+			)
+			rec := httptest.NewRecorder()
+
+			c := e.NewContext(req, rec)
+
+			if err := NoContent(c); err != nil {
+				t.Fatalf("want no err, but has error: %s", err.Error())
+			}
+
+			res := rec.Result()
+
+			gotStatusCode := res.StatusCode
+			if gotStatusCode != tt.wantStatusCode {
+				t.Errorf("statusCode got = %d, want = %d", gotStatusCode, tt.wantStatusCode)
+			}
+		})
+	}
+}

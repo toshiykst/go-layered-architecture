@@ -13,3 +13,7 @@ func OK(c echo.Context, body any) error {
 func Created(c echo.Context, body any) error {
 	return c.JSON(http.StatusCreated, body)
 }
+
+func NoContent(c echo.Context) error {
+	return c.NoContent(http.StatusNoContent)
+}

@@ -45,6 +45,7 @@ func main() {
 	e.POST("/users", uh.CreateUser)
 	e.GET("/users/:id", uh.GetUser)
 	e.GET("/users", uh.GetUsers)
+	e.PUT("/users", uh.UpdateUser)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

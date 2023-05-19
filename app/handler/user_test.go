@@ -458,3 +458,111 @@ func TestUserHandler_GetUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestUserHandler_UpdateUser(t *testing.T) {
+	tests := []struct {
+		name           string
+		req            *UpdateUserRequest
+		newUserUsecase func(ctrl *gomock.Controller) usecase.UserUsecase
+		wantStatus     int
+		wantErrRes     *response.ErrorResponse
+	}{
+		{
+			name: "Update a user and returns the user response",
+			req: &UpdateUserRequest{
+				UserID: "TEST_USER_ID",
+				Name:   "TEST_USER_NAME",
+				Email:  "TEST_USER_EMAIL",
+			},
+			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
+				uc := mockusecase.NewMockUserUsecase(ctrl)
+				uc.EXPECT().
+					UpdateUser(gomock.Any()).
+					DoAndReturn(func(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
+						return &dto.UpdateUserOutput{}, nil
+					})
+				return uc
+			},
+			wantStatus: http.StatusNoContent,
+			wantErrRes: nil,
+		},
+		{
+			name: "Returns internal server error response",
+			req: &UpdateUserRequest{
+				UserID: "TEST_USER_ID",
+				Name:   "TEST_USER_NAME",
+				Email:  "TEST_USER_EMAIL",
+			},
+			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
+				uc := mockusecase.NewMockUserUsecase(ctrl)
+				uc.EXPECT().
+					UpdateUser(gomock.Any()).
+					Return(nil, errors.New("an error occurred"))
+				return uc
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInternalServerError,
+				Status:  http.StatusInternalServerError,
+				Message: "an error occurred",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqJson, _ := json.Marshal(tt.req)
+
+			req := httptest.NewRequest(
+				http.MethodPut,
+				"https://example.com:8080/users",
+				bytes.NewBuffer(reqJson),
+			)
+			req.Header.Set("Content-Type", "application/json")
+
+			rec := httptest.NewRecorder()
+
+			e := echo.New()
+			c := e.NewContext(req, rec)
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			uc := tt.newUserUsecase(ctrl)
+
+			h := NewUserHandler(uc)
+
+			err := h.UpdateUser(c)
+			if err != nil {
+				t.Fatalf("want no err, but has error: %v", err)
+			}
+
+			res := rec.Result()
+
+			wantStatusCode := tt.wantStatus
+			gotStatusCode := res.StatusCode
+			if gotStatusCode != wantStatusCode {
+				t.Errorf("statusCode got = %d, want = %d", gotStatusCode, wantStatusCode)
+			}
+
+			resBody, err := io.ReadAll(rec.Body)
+			if err != nil {
+				t.Fatalf("Failed to read body: %s", err.Error())
+			}
+			defer func(Body io.ReadCloser) {
+				if err := Body.Close(); err != nil {
+					t.Fatalf("Failed to close body: %s", err.Error())
+				}
+			}(res.Body)
+
+			if tt.wantErrRes != nil {
+				var got *response.ErrorResponse
+				_ = json.Unmarshal(resBody, &got)
+				if diff := cmp.Diff(got, tt.wantErrRes); diff != "" {
+					t.Errorf(
+						"error response body: got = %v, want = %v\ndiffers: (-got +want)\n%s",
+						got, tt.wantErrRes, diff,
+					)
+				}
+			}
+		})
+	}
+}

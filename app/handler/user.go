@@ -109,3 +109,31 @@ func (h *UserHandler) GetUsers(c echo.Context) error {
 		Users: us,
 	})
 }
+
+type (
+	UpdateUserRequest struct {
+		UserID string `json:"user_id"`
+		Name   string `json:"name"`
+		Email  string `json:"email"`
+	}
+)
+
+func (h *UserHandler) UpdateUser(c echo.Context) error {
+	req := &UpdateUserRequest{}
+	if err := c.Bind(req); err != nil {
+		return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
+	}
+
+	in := &dto.UpdateUserInput{
+		UserID: req.UserID,
+		Name:   req.Name,
+		Email:  req.Email,
+	}
+
+	_, err := h.uc.UpdateUser(in)
+	if err != nil {
+		return response.ErrorInternal(c, err)
+	}
+
+	return response.NoContent(c)
+}
