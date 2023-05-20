@@ -296,3 +296,50 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 		})
 	}
 }
+
+func TestUserUsecase_DeleteUser(t *testing.T) {
+	tests := []struct {
+		name              string
+		in                *dto.DeleteUserInput
+		newMockRepository func() repository.Repository
+		wantErr           error
+	}{
+		{
+			name: "Delete a user",
+			in: &dto.DeleteUserInput{
+				UserID: "TEST_USER_ID",
+			},
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			f := mockfactory.NewMockUserFactory(ctrl)
+			r := tt.newMockRepository()
+
+			uc := NewUserUsecase(
+				r, f,
+				mockdomainservice.NewMockUserService(ctrl),
+			)
+			_, err := uc.DeleteUser(tt.in)
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+
+			uID := model.UserID(tt.in.UserID)
+			got, _ := r.User().Find(uID)
+			if got != nil {
+				t.Errorf("r.User().Find(%s)=%v, _; want nil", uID, got)
+			}
+		})
+	}
+}

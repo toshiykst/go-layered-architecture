@@ -124,5 +124,15 @@ func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutpu
 }
 
 func (uc *userUsecase) DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error) {
+	uID := model.UserID(in.UserID)
+	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
+		if err := tx.User().Delete(uID); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
 	return &dto.DeleteUserOutput{}, nil
 }
