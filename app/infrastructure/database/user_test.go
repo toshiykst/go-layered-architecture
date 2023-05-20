@@ -309,3 +309,64 @@ func TestDatabase_dbUserRepository_Update(t *testing.T) {
 		})
 	}
 }
+
+func TestDatabase_dbUserRepository_Delete(t *testing.T) {
+	tests := []struct {
+		name    string
+		userID  model.UserID
+		wantErr error
+	}{
+		{
+			name:    "Delete a user",
+			userID:  model.UserID("TEST_USER_ID"),
+			wantErr: nil,
+		},
+		{
+			name:    "Error",
+			userID:  model.UserID("TEST_USER_ID"),
+			wantErr: errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			expectExec := mock.
+				ExpectExec(regexp.QuoteMeta("DELETE FROM `users` WHERE `users`.`id` = ?")).
+				WithArgs(tt.userID)
+
+			if tt.wantErr != nil {
+				expectExec.WillReturnError(tt.wantErr)
+			} else {
+				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			r := &dbUserRepository{db: db}
+
+			err = r.Delete(tt.userID)
+
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf("r.Delete(%s)=%v; want %v", tt.userID, err, tt.wantErr)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no errpr, but has error %v", err)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}

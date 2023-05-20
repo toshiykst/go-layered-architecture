@@ -60,6 +60,8 @@ func (r *dbUserRepository) Update(u *model.User) error {
 	return nil
 }
 
-func (r *dbUserRepository) Delete(id model.UserID) error {
-	return nil
+func (r *dbUserRepository) Delete(uID model.UserID) error {
+	return r.db.Delete(&datamodel.User{
+		ID: string(uID),
+	}).Error
 }

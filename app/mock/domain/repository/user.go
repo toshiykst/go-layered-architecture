@@ -43,6 +43,13 @@ func (r *mockUserRepository) Update(u *model.User) error {
 	return nil
 }
 
-func (r *mockUserRepository) Delete(id model.UserID) error {
+func (r *mockUserRepository) Delete(uID model.UserID) error {
+	var result model.Users
+	for _, user := range r.s.users {
+		if user.ID() != uID {
+			result = append(result, user)
+		}
+	}
+	r.s.users = result
 	return nil
 }
