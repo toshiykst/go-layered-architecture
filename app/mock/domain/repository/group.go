@@ -12,10 +12,6 @@ func (db *mockGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
 	return nil, nil
 }
 
-func (db *mockGroupRepository) FindByName(name string) (*model.Group, error) {
-	return nil, nil
-}
-
 func (db *mockGroupRepository) List() ([]*model.Group, error) {
 	return nil, nil
 }

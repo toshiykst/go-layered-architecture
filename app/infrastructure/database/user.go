@@ -26,10 +26,6 @@ func (r *dbUserRepository) Find(uID model.UserID) (*model.User, error) {
 	return dmu.ToModel(), nil
 }
 
-func (r *dbUserRepository) FindByName(name string) (*model.User, error) {
-	return nil, nil
-}
-
 func (r *dbUserRepository) List() (model.Users, error) {
 	var dmus datamodel.Users
 	if err := r.db.Find(&dmus).Error; err != nil {

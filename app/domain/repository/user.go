@@ -7,7 +7,6 @@ import (
 // UserRepositoryQuery is interface for query methods of user.
 type UserRepositoryQuery interface {
 	Find(id model.UserID) (*model.User, error)
-	FindByName(name string) (*model.User, error)
 	List() (model.Users, error)
 }
 

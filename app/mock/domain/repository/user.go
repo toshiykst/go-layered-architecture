@@ -19,10 +19,6 @@ func (r *mockUserRepository) Find(uID model.UserID) (*model.User, error) {
 	return nil, nil
 }
 
-func (r *mockUserRepository) FindByName(name string) (*model.User, error) {
-	return nil, nil
-}
-
 func (r *mockUserRepository) List() (model.Users, error) {
 	return r.s.users, nil
 }
