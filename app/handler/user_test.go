@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -468,7 +469,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 		wantErrRes     *response.ErrorResponse
 	}{
 		{
-			name: "Update a user and returns the user response",
+			name: "Update a user",
 			req: &UpdateUserRequest{
 				UserID: "TEST_USER_ID",
 				Name:   "TEST_USER_NAME",
@@ -531,6 +532,104 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 			h := NewUserHandler(uc)
 
 			err := h.UpdateUser(c)
+			if err != nil {
+				t.Fatalf("want no err, but has error: %v", err)
+			}
+
+			res := rec.Result()
+
+			wantStatusCode := tt.wantStatus
+			gotStatusCode := res.StatusCode
+			if gotStatusCode != wantStatusCode {
+				t.Errorf("statusCode got = %d, want = %d", gotStatusCode, wantStatusCode)
+			}
+
+			resBody, err := io.ReadAll(rec.Body)
+			if err != nil {
+				t.Fatalf("Failed to read body: %s", err.Error())
+			}
+			defer func(Body io.ReadCloser) {
+				if err := Body.Close(); err != nil {
+					t.Fatalf("Failed to close body: %s", err.Error())
+				}
+			}(res.Body)
+
+			if tt.wantErrRes != nil {
+				var got *response.ErrorResponse
+				_ = json.Unmarshal(resBody, &got)
+				if diff := cmp.Diff(got, tt.wantErrRes); diff != "" {
+					t.Errorf(
+						"error response body: got = %v, want = %v\ndiffers: (-got +want)\n%s",
+						got, tt.wantErrRes, diff,
+					)
+				}
+			}
+		})
+	}
+}
+
+func TestUserHandler_DeleteUser(t *testing.T) {
+	tests := []struct {
+		name           string
+		uID            string
+		newUserUsecase func(ctrl *gomock.Controller) usecase.UserUsecase
+		wantStatus     int
+		wantErrRes     *response.ErrorResponse
+	}{
+		{
+			name: "Delete a user",
+			uID:  "TEST_USER_ID",
+			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
+				uc := mockusecase.NewMockUserUsecase(ctrl)
+				uc.EXPECT().
+					DeleteUser(gomock.Any()).
+					DoAndReturn(func(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error) {
+						return &dto.DeleteUserOutput{}, nil
+					})
+				return uc
+			},
+			wantStatus: http.StatusNoContent,
+			wantErrRes: nil,
+		},
+		{
+			name: "Returns internal server error response",
+			uID:  "TEST_USER_ID",
+			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
+				uc := mockusecase.NewMockUserUsecase(ctrl)
+				uc.EXPECT().
+					DeleteUser(gomock.Any()).
+					Return(nil, errors.New("an error occurred"))
+				return uc
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInternalServerError,
+				Status:  http.StatusInternalServerError,
+				Message: "an error occurred",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(
+				http.MethodDelete,
+				fmt.Sprintf("https://example.com:8080/users/%s", "TEST_USER_ID"),
+				nil,
+			)
+			req.Header.Set("Content-Type", "application/json")
+
+			rec := httptest.NewRecorder()
+
+			e := echo.New()
+			c := e.NewContext(req, rec)
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			uc := tt.newUserUsecase(ctrl)
+
+			h := NewUserHandler(uc)
+
+			err := h.DeleteUser(c)
 			if err != nil {
 				t.Fatalf("want no err, but has error: %v", err)
 			}

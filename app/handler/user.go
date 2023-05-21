@@ -137,3 +137,18 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 
 	return response.NoContent(c)
 }
+
+func (h *UserHandler) DeleteUser(c echo.Context) error {
+	uID := c.Param("id")
+
+	in := &dto.DeleteUserInput{
+		UserID: uID,
+	}
+
+	_, err := h.uc.DeleteUser(in)
+	if err != nil {
+		return response.ErrorInternal(c, err)
+	}
+
+	return response.NoContent(c)
+}
