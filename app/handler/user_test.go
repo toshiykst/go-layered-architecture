@@ -463,6 +463,7 @@ func TestUserHandler_GetUsers(t *testing.T) {
 func TestUserHandler_UpdateUser(t *testing.T) {
 	tests := []struct {
 		name           string
+		uID            string
 		req            *UpdateUserRequest
 		newUserUsecase func(ctrl *gomock.Controller) usecase.UserUsecase
 		wantStatus     int
@@ -470,10 +471,10 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 	}{
 		{
 			name: "Update a user",
+			uID:  "TEST_USER_ID",
 			req: &UpdateUserRequest{
-				UserID: "TEST_USER_ID",
-				Name:   "TEST_USER_NAME",
-				Email:  "TEST_USER_EMAIL",
+				Name:  "TEST_USER_NAME",
+				Email: "TEST_USER_EMAIL",
 			},
 			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
 				uc := mockusecase.NewMockUserUsecase(ctrl)
@@ -489,10 +490,10 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 		},
 		{
 			name: "Returns internal server error response",
+			uID:  "TEST_USER_ID",
 			req: &UpdateUserRequest{
-				UserID: "TEST_USER_ID",
-				Name:   "TEST_USER_NAME",
-				Email:  "TEST_USER_EMAIL",
+				Name:  "TEST_USER_NAME",
+				Email: "TEST_USER_EMAIL",
 			},
 			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
 				uc := mockusecase.NewMockUserUsecase(ctrl)
@@ -515,7 +516,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 
 			req := httptest.NewRequest(
 				http.MethodPut,
-				"https://example.com:8080/users",
+				fmt.Sprintf("https://example.com:8080/users/%s", tt.uID),
 				bytes.NewBuffer(reqJson),
 			)
 			req.Header.Set("Content-Type", "application/json")
@@ -613,7 +614,7 @@ func TestUserHandler_DeleteUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequest(
 				http.MethodDelete,
-				fmt.Sprintf("https://example.com:8080/users/%s", "TEST_USER_ID"),
+				fmt.Sprintf("https://example.com:8080/users/%s", tt.uID),
 				nil,
 			)
 			req.Header.Set("Content-Type", "application/json")
