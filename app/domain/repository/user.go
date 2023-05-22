@@ -6,7 +6,7 @@ import (
 
 // UserRepositoryQuery is interface for query methods of user.
 type UserRepositoryQuery interface {
-	Find(id model.UserID) (*model.User, error)
+	Find(uID model.UserID) (*model.User, error)
 	List() (model.Users, error)
 }
 
@@ -15,5 +15,5 @@ type UserRepositoryCommand interface {
 	UserRepositoryQuery
 	Create(u *model.User) (*model.User, error)
 	Update(u *model.User) error
-	Delete(id model.UserID) error
+	Delete(uID model.UserID) error
 }

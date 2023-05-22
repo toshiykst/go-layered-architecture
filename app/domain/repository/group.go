@@ -6,7 +6,7 @@ import (
 
 // GroupRepositoryQuery is interface for query methods of group.
 type GroupRepositoryQuery interface {
-	Find(id model.GroupID) (*model.Group, error)
+	Find(gID model.GroupID) (*model.Group, error)
 	List() ([]*model.Group, error)
 }
 
@@ -15,5 +15,5 @@ type GroupRepositoryCommand interface {
 	GroupRepositoryQuery
 	Create(g *model.Group) (*model.Group, error)
 	Update(g *model.Group) error
-	Delete(id model.GroupID) error
+	Delete(gID model.GroupID) error
 }
