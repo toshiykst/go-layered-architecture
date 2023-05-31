@@ -8,22 +8,27 @@ type mockGroupRepository struct {
 	s *store
 }
 
-func (db *mockGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
+func (r *mockGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
+	for _, g := range r.s.groups {
+		if g.ID() == gID {
+			return g, nil
+		}
+	}
 	return nil, nil
 }
 
-func (db *mockGroupRepository) List() ([]*model.Group, error) {
+func (r *mockGroupRepository) List() ([]*model.Group, error) {
 	return nil, nil
 }
 
-func (db *mockGroupRepository) Create(g *model.Group) (*model.Group, error) {
+func (r *mockGroupRepository) Create(g *model.Group) (*model.Group, error) {
 	return nil, nil
 }
 
-func (db *mockGroupRepository) Update(g *model.Group) error {
+func (r *mockGroupRepository) Update(g *model.Group) error {
 	return nil
 }
 
-func (db *mockGroupRepository) Delete(id model.GroupID) error {
+func (r *mockGroupRepository) Delete(id model.GroupID) error {
 	return nil
 }
