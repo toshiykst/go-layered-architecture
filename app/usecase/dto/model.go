@@ -5,3 +5,9 @@ type User struct {
 	Name   string
 	Email  string
 }
+
+type Group struct {
+	GroupID string
+	Name    string
+	Users   []User
+}
