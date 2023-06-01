@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"database/sql/driver"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -35,4 +36,13 @@ func DBMock(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
 	gormDB.Debug()
 
 	return mock, gormDB
+}
+
+func ToDBMockQueryArgs[T any](t *testing.T, v ...T) []driver.Value {
+	t.Helper()
+	result := make([]driver.Value, len(v))
+	for i, e := range v {
+		result[i] = driver.Value(e)
+	}
+	return result
 }
