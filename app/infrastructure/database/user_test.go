@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/testutil"
 )
 
@@ -100,12 +101,15 @@ func TestDatabase_dbUserRepository_Find(t *testing.T) {
 func TestDatabase_dbUserRepository_List(t *testing.T) {
 	tests := []struct {
 		name    string
+		filter  repository.UserListFilter
 		want    model.Users
+		wantSQL string
 		wantErr error
 		dbErr   error
 	}{
 		{
-			name: "Returns users",
+			name:   "Returns users",
+			filter: repository.UserListFilter{},
 			want: model.Users{
 				model.NewUser(
 					"TEST_USER_ID_1",
@@ -123,12 +127,38 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 					"TEST_USER_EMAIL_3",
 				),
 			},
+			wantSQL: "SELECT * FROM `users`",
+			wantErr: nil,
+			dbErr:   nil,
+		},
+		{
+			name: "Returns users filtered by user_ids",
+			filter: repository.UserListFilter{
+				UserIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_3",
+				},
+			},
+			want: model.Users{
+				model.NewUser(
+					"TEST_USER_ID_1",
+					"TEST_USER_NAME_1",
+					"TEST_USER_EMAIL_1",
+				),
+				model.NewUser(
+					"TEST_USER_ID_3",
+					"TEST_USER_NAME_3",
+					"TEST_USER_EMAIL_3",
+				),
+			},
+			wantSQL: "SELECT * FROM `users` WHERE id IN (?,?)",
 			wantErr: nil,
 			dbErr:   nil,
 		},
 		{
 			name:    "Error",
 			want:    nil,
+			wantSQL: "SELECT * FROM `users`",
 			wantErr: errors.New("an error occurred"),
 			dbErr:   errors.New("an error occurred"),
 		},
@@ -143,9 +173,12 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 			}
 			defer sqlDB.Close()
 
-			sql := "SELECT * FROM `users`"
 			expectQuery := mock.
-				ExpectQuery(regexp.QuoteMeta(sql))
+				ExpectQuery(regexp.QuoteMeta(tt.wantSQL))
+
+			if len(tt.filter.UserIDs) > 0 {
+				expectQuery.WithArgs(testutil.ToDBMockQueryArgs[model.UserID](t, tt.filter.UserIDs...)...)
+			}
 
 			if tt.dbErr != nil {
 				expectQuery.WillReturnError(tt.dbErr)
@@ -159,13 +192,13 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 			}
 
 			r := &dbUserRepository{db: db}
-			got, err := r.List()
+			got, err := r.List(tt.filter)
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Error("want an error, but has no error")
 				}
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("r.List()=_, %v; want _, %v", got, tt.want)
+					t.Errorf("r.List(%v)=_, %v; want _, %v", tt.filter, got, tt.want)
 				}
 			} else {
 				if err != nil {

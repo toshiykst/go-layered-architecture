@@ -86,7 +86,7 @@ func (uc *userUsecase) GetUser(in *dto.GetUserInput) (*dto.GetUserOutput, error)
 }
 
 func (uc *userUsecase) GetUsers(_ *dto.GetUsersInput) (*dto.GetUsersOutput, error) {
-	us, err := uc.r.User().List()
+	us, err := uc.r.User().List(repository.UserListFilter{})
 	if err != nil {
 		return nil, err
 	}

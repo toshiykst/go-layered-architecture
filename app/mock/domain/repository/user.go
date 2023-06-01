@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 )
 
 type mockUserRepository struct {
@@ -19,8 +20,26 @@ func (r *mockUserRepository) Find(uID model.UserID) (*model.User, error) {
 	return nil, nil
 }
 
-func (r *mockUserRepository) List() (model.Users, error) {
-	return r.s.users, nil
+func (r *mockUserRepository) List(f repository.UserListFilter) (model.Users, error) {
+	var result model.Users
+	for _, u := range r.s.users {
+		if len(f.UserIDs) > 0 {
+			found := false
+			for _, fUID := range f.UserIDs {
+				if u.ID() == fUID {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+
+		result = append(result, u)
+	}
+
+	return result, nil
 }
 
 func (r *mockUserRepository) Create(u *model.User) (*model.User, error) {

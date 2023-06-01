@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database/datamodel"
 )
 
@@ -26,9 +27,14 @@ func (r *dbUserRepository) Find(uID model.UserID) (*model.User, error) {
 	return dmu.ToModel(), nil
 }
 
-func (r *dbUserRepository) List() (model.Users, error) {
+func (r *dbUserRepository) List(f repository.UserListFilter) (model.Users, error) {
+	db := r.db
+	if len(f.UserIDs) > 0 {
+		db = db.Where("id IN (?)", f.UserIDs)
+	}
+
 	var dmus datamodel.Users
-	if err := r.db.Find(&dmus).Error; err != nil {
+	if err := db.Find(&dmus).Error; err != nil {
 		return nil, err
 	}
 

@@ -4,10 +4,14 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 )
 
+type UserListFilter struct {
+	UserIDs []model.UserID
+}
+
 // UserRepositoryQuery is interface for query methods of user.
 type UserRepositoryQuery interface {
 	Find(uID model.UserID) (*model.User, error)
-	List() (model.Users, error)
+	List(f UserListFilter) (model.Users, error)
 }
 
 // UserRepositoryCommand is interface for query and command methods of user.
