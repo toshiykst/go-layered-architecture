@@ -4,6 +4,9 @@ package usecase
 import (
 	"errors"
 
+	"github.com/labstack/gommon/log"
+
+	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
@@ -35,7 +38,32 @@ func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupO
 }
 
 func (uc *groupUsecase) GetGroup(in *dto.GetGroupInput) (*dto.GetGroupOutput, error) {
-	return nil, nil
+	gID := model.GroupID(in.GroupID)
+
+	g, err := uc.r.Group().Find(gID)
+	if err != nil {
+		return nil, err
+	}
+	if g == nil {
+		// TODO: Use custom logger(zap)
+		log.Warnf("the group is not found; groupID=%s", gID)
+		return nil, ErrGroupNotFound
+	}
+
+	us, err := uc.r.User().List(repository.UserListFilter{
+		UserIDs: g.UserIDs(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.GetGroupOutput{
+		Group: dto.Group{
+			GroupID: string(g.ID()),
+			Name:    g.Name(),
+			Users:   convertUsersToDTO(us),
+		},
+	}, nil
 }
 
 func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, error) {
