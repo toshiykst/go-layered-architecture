@@ -177,7 +177,7 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 				ExpectQuery(regexp.QuoteMeta(tt.wantSQL))
 
 			if len(tt.filter.UserIDs) > 0 {
-				expectQuery.WithArgs(testutil.ToDBMockQueryArgs[model.UserID](t, tt.filter.UserIDs...)...)
+				expectQuery.WithArgs(testutil.ToDriverValues[model.UserID](t, tt.filter.UserIDs...)...)
 			}
 
 			if tt.dbErr != nil {

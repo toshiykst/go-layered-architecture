@@ -38,7 +38,7 @@ func DBMock(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
 	return mock, gormDB
 }
 
-func ToDBMockQueryArgs[T any](t *testing.T, v ...T) []driver.Value {
+func ToDriverValues[T any](t *testing.T, v ...T) []driver.Value {
 	t.Helper()
 	result := make([]driver.Value, len(v))
 	for i, e := range v {
