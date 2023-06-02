@@ -96,18 +96,6 @@ func (uc *userUsecase) GetUsers(_ *dto.GetUsersInput) (*dto.GetUsersOutput, erro
 	}, nil
 }
 
-func convertUsersToDTO(us model.Users) []dto.User {
-	result := make([]dto.User, len(us))
-	for i, u := range us {
-		result[i] = dto.User{
-			UserID: string(u.ID()),
-			Name:   u.Name(),
-			Email:  u.Email(),
-		}
-	}
-	return result
-}
-
 func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
 	u := model.NewUser(model.UserID(in.UserID), in.Name, in.Email)
 
