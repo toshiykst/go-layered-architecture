@@ -12,6 +12,7 @@ const (
 	ErrorCodeInternalServerError ErrorCode = "INTERNAL_SERVER_ERROR"
 	ErrorCodeInvalidArguments    ErrorCode = "INVALID_INVALID_ARGUMENTS"
 	ErrorCodeUserNotFound        ErrorCode = "USER_NOT_FOUND"
+	ErrorCodeGroupNotFound       ErrorCode = "GROUP_NOT_FOUND"
 )
 
 type ErrorResponse struct {

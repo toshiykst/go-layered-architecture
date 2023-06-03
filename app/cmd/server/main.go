@@ -48,5 +48,10 @@ func main() {
 	e.PUT("/users/:id", uh.UpdateUser)
 	e.DELETE("/users/:id", uh.DeleteUser)
 
+	guc := usecase.NewGroupUsecase(db)
+	gh := handler.NewGroupHandler(guc)
+
+	e.GET("/groups/:id", gh.GetGroup)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }
