@@ -3,6 +3,7 @@ package database
 import (
 	"errors"
 	"regexp"
+	"strings"
 	"testing"
 	"time"
 
@@ -122,6 +123,164 @@ func TestDatabase_dbGroupRepository_Find(t *testing.T) {
 					t.Errorf(
 						"r.Find(%s)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
 						tt.gID, got, tt.want, diff,
+					)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestDatabase_dbGroupRepository_Create(t *testing.T) {
+	tests := []struct {
+		name           string
+		group          *model.Group
+		want           *model.Group
+		wantErr        error
+		dbGroupErr     error
+		dbGroupUserErr error
+	}{
+		{
+			name: "Creates a new group",
+			group: model.NewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			),
+			want: model.NewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			),
+			wantErr:        nil,
+			dbGroupErr:     nil,
+			dbGroupUserErr: nil,
+		},
+		{
+			name: "Creates a new group without users",
+			group: model.NewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{},
+			),
+			want: model.NewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{},
+			),
+			wantErr:        nil,
+			dbGroupErr:     nil,
+			dbGroupUserErr: nil,
+		},
+		{
+			name: "DB group error",
+			group: model.NewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			),
+			want:           nil,
+			wantErr:        errors.New("an error occurred"),
+			dbGroupErr:     errors.New("an error occurred"),
+			dbGroupUserErr: nil,
+		},
+		{
+			name: "DB groupuser error",
+			group: model.NewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			),
+			want:           nil,
+			wantErr:        errors.New("an error occurred"),
+			dbGroupErr:     nil,
+			dbGroupUserErr: errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			mock.ExpectBegin()
+
+			groupsExpectExec := mock.
+				ExpectExec(regexp.QuoteMeta("INSERT INTO `groups` (`id`,`name`) VALUES (?,?)")).
+				WithArgs(tt.group.ID(), tt.group.Name())
+
+			if tt.dbGroupErr != nil {
+				groupsExpectExec.WillReturnError(tt.dbGroupErr)
+				mock.ExpectRollback()
+			} else {
+				groupsExpectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+
+				if len(tt.group.UserIDs()) > 0 {
+					var (
+						groupUserArgs []any
+						placeHolders  []string
+					)
+					for _, uID := range tt.group.UserIDs() {
+						placeHolders = append(placeHolders, "(?,?)")
+						groupUserArgs = append(groupUserArgs, tt.group.ID(), uID)
+					}
+
+					groupUsersExpectExec := mock.
+						ExpectExec(regexp.QuoteMeta("INSERT INTO `group_users` (`group_id`,`user_id`) VALUES " + strings.Join(placeHolders, ","))).
+						WithArgs(testutil.ToDriverValues(t, groupUserArgs...)...)
+
+					if tt.dbGroupUserErr != nil {
+						groupUsersExpectExec.WillReturnError(tt.dbGroupUserErr)
+						mock.ExpectRollback()
+					} else {
+						groupUsersExpectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+						mock.ExpectCommit()
+					}
+				} else {
+					mock.ExpectCommit()
+				}
+			}
+
+			r := &dbGroupRepository{db: db}
+			got, err := r.Create(tt.group)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("r.Create(%v)=_, %v; want _, %v", tt.group, got, tt.want)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no error, but has error %v", err)
+				}
+				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.Group{})); diff != "" {
+					t.Errorf(
+						"r.Create(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
+						tt.group, got, tt.want, diff,
 					)
 				}
 			}

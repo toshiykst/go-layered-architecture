@@ -36,7 +36,28 @@ func (r *dbGroupRepository) List() ([]*model.Group, error) {
 }
 
 func (r *dbGroupRepository) Create(g *model.Group) (*model.Group, error) {
-	return nil, nil
+	dmg := datamodel.NewGroup(g.ID(), g.Name())
+	dmgus := datamodel.NewGroupUsers(g.ID(), g.UserIDs())
+
+	if err := r.db.Transaction(func(tx *gorm.DB) error {
+		if err := r.db.Create(dmg).Error; err != nil {
+			return err
+		}
+
+		if len(dmgus) == 0 {
+			return nil
+		}
+
+		if err := r.db.Create(dmgus).Error; err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return dmg.ToModel(dmgus), nil
 }
 
 func (r *dbGroupRepository) Update(g *model.Group) error {

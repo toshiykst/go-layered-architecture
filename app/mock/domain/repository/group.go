@@ -22,6 +22,7 @@ func (r *mockGroupRepository) List() ([]*model.Group, error) {
 }
 
 func (r *mockGroupRepository) Create(g *model.Group) (*model.Group, error) {
+	r.s.AddGroups(g)
 	return nil, nil
 }
 
