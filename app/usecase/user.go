@@ -113,6 +113,7 @@ func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutpu
 
 func (uc *userUsecase) DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error) {
 	uID := model.UserID(in.UserID)
+	//　TODO: Remove the user from groups if it's in groups.
 	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
 		if err := tx.User().Delete(uID); err != nil {
 			return err
