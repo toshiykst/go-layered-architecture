@@ -33,3 +33,18 @@ func (r *mockGroupRepository) Update(g *model.Group) error {
 func (r *mockGroupRepository) Delete(id model.GroupID) error {
 	return nil
 }
+
+func (r *mockGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {
+	for i, g := range r.s.groups {
+		if g.ID() == gID {
+			r.s.groups[i] = model.NewGroup(gID, g.Name(), uIDs)
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func (r *mockGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) error {
+	return nil
+}

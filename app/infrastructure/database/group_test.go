@@ -136,84 +136,37 @@ func TestDatabase_dbGroupRepository_Find(t *testing.T) {
 
 func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 	tests := []struct {
-		name           string
-		group          *model.Group
-		want           *model.Group
-		wantErr        error
-		dbGroupErr     error
-		dbGroupUserErr error
+		name    string
+		group   *model.Group
+		dbErr   error
+		want    *model.Group
+		wantErr error
 	}{
 		{
 			name: "Creates a new group",
 			group: model.NewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME",
-				[]model.UserID{
-					"TEST_USER_ID_1",
-					"TEST_USER_ID_2",
-					"TEST_USER_ID_3",
-				},
-			),
-			want: model.NewGroup(
-				"TEST_GROUP_ID",
-				"TEST_GROUP_NAME",
-				[]model.UserID{
-					"TEST_USER_ID_1",
-					"TEST_USER_ID_2",
-					"TEST_USER_ID_3",
-				},
-			),
-			wantErr:        nil,
-			dbGroupErr:     nil,
-			dbGroupUserErr: nil,
-		},
-		{
-			name: "Creates a new group without users",
-			group: model.NewGroup(
-				"TEST_GROUP_ID",
-				"TEST_GROUP_NAME",
 				[]model.UserID{},
 			),
+			dbErr: nil,
 			want: model.NewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME",
 				[]model.UserID{},
 			),
-			wantErr:        nil,
-			dbGroupErr:     nil,
-			dbGroupUserErr: nil,
+			wantErr: nil,
 		},
 		{
-			name: "DB group error",
+			name: "DB error",
 			group: model.NewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME",
-				[]model.UserID{
-					"TEST_USER_ID_1",
-					"TEST_USER_ID_2",
-					"TEST_USER_ID_3",
-				},
+				nil,
 			),
-			want:           nil,
-			wantErr:        errors.New("an error occurred"),
-			dbGroupErr:     errors.New("an error occurred"),
-			dbGroupUserErr: nil,
-		},
-		{
-			name: "DB groupuser error",
-			group: model.NewGroup(
-				"TEST_GROUP_ID",
-				"TEST_GROUP_NAME",
-				[]model.UserID{
-					"TEST_USER_ID_1",
-					"TEST_USER_ID_2",
-					"TEST_USER_ID_3",
-				},
-			),
-			want:           nil,
-			wantErr:        errors.New("an error occurred"),
-			dbGroupErr:     nil,
-			dbGroupUserErr: errors.New("an error occurred"),
+			dbErr:   errors.New("an error occurred"),
+			want:    nil,
+			wantErr: errors.New("an error occurred"),
 		},
 	}
 
@@ -226,42 +179,14 @@ func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 			}
 			defer sqlDB.Close()
 
-			mock.ExpectBegin()
-
-			groupsExpectExec := mock.
+			expectExec := mock.
 				ExpectExec(regexp.QuoteMeta("INSERT INTO `groups` (`id`,`name`) VALUES (?,?)")).
 				WithArgs(tt.group.ID(), tt.group.Name())
 
-			if tt.dbGroupErr != nil {
-				groupsExpectExec.WillReturnError(tt.dbGroupErr)
-				mock.ExpectRollback()
+			if tt.wantErr != nil {
+				expectExec.WillReturnError(tt.wantErr)
 			} else {
-				groupsExpectExec.WillReturnResult(sqlmock.NewResult(1, 1))
-
-				if len(tt.group.UserIDs()) > 0 {
-					var (
-						groupUserArgs []any
-						placeHolders  []string
-					)
-					for _, uID := range tt.group.UserIDs() {
-						placeHolders = append(placeHolders, "(?,?)")
-						groupUserArgs = append(groupUserArgs, tt.group.ID(), uID)
-					}
-
-					groupUsersExpectExec := mock.
-						ExpectExec(regexp.QuoteMeta("INSERT INTO `group_users` (`group_id`,`user_id`) VALUES " + strings.Join(placeHolders, ","))).
-						WithArgs(testutil.ToDriverValues(t, groupUserArgs...)...)
-
-					if tt.dbGroupUserErr != nil {
-						groupUsersExpectExec.WillReturnError(tt.dbGroupUserErr)
-						mock.ExpectRollback()
-					} else {
-						groupUsersExpectExec.WillReturnResult(sqlmock.NewResult(1, 1))
-						mock.ExpectCommit()
-					}
-				} else {
-					mock.ExpectCommit()
-				}
+				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
 			}
 
 			r := &dbGroupRepository{db: db}
@@ -270,18 +195,108 @@ func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 				if err == nil {
 					t.Error("want an error, but has no error")
 				}
-				if err.Error() != tt.wantErr.Error() {
+				if !errors.Is(err, tt.wantErr) {
 					t.Errorf("r.Create(%v)=_, %v; want _, %v", tt.group, got, tt.want)
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no error, but has error %v", err)
+					t.Fatalf("want no err, but has error %v", err)
 				}
 				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.Group{})); diff != "" {
 					t.Errorf(
 						"r.Create(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
 						tt.group, got, tt.want, diff,
 					)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
+	type args struct {
+		gID  model.GroupID
+		uIDs []model.UserID
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		dbErr   error
+		wantErr error
+	}{
+		{
+			name: "Add users to the group",
+			args: args{
+				gID: "TEST_GROUP_ID",
+				uIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			dbErr:   nil,
+			wantErr: nil,
+		},
+		{
+			name: "DB group error",
+			args: args{
+				gID: "TEST_GROUP_ID",
+				uIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			dbErr:   errors.New("an error occurred"),
+			wantErr: errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			var (
+				sqlArgs      []any
+				placeHolders []string
+			)
+			for _, uID := range tt.args.uIDs {
+				placeHolders = append(placeHolders, "(?,?)")
+				sqlArgs = append(sqlArgs, tt.args.gID, uID)
+			}
+
+			expectExec := mock.
+				ExpectExec(regexp.QuoteMeta("INSERT INTO `group_users` (`group_id`,`user_id`) VALUES " + strings.Join(placeHolders, ","))).
+				WithArgs(testutil.ToDriverValues(t, sqlArgs...)...)
+
+			if tt.wantErr != nil {
+				expectExec.WillReturnError(tt.wantErr)
+			} else {
+				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			r := &dbGroupRepository{db: db}
+			err = r.AddUsers(tt.args.gID, tt.args.uIDs)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf("r.AddUsers(%s, %v)=%v; want %v", tt.args.gID, tt.args.uIDs, err, tt.wantErr)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no err, but has error %v", err)
 				}
 			}
 

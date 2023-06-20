@@ -16,4 +16,6 @@ type GroupRepositoryCommand interface {
 	Create(g *model.Group) (*model.Group, error)
 	Update(g *model.Group) error
 	Delete(gID model.GroupID) error
+	AddUsers(gID model.GroupID, uIDs []model.UserID) error
+	RemoveUsers(gID model.GroupID, uIDs []model.UserID) error
 }

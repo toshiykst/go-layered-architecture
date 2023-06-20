@@ -37,27 +37,12 @@ func (r *dbGroupRepository) List() ([]*model.Group, error) {
 
 func (r *dbGroupRepository) Create(g *model.Group) (*model.Group, error) {
 	dmg := datamodel.NewGroup(g.ID(), g.Name())
-	dmgus := datamodel.NewGroupUsers(g.ID(), g.UserIDs())
 
-	if err := r.db.Transaction(func(tx *gorm.DB) error {
-		if err := r.db.Create(dmg).Error; err != nil {
-			return err
-		}
-
-		if len(dmgus) == 0 {
-			return nil
-		}
-
-		if err := r.db.Create(dmgus).Error; err != nil {
-			return err
-		}
-
-		return nil
-	}); err != nil {
+	if err := r.db.Create(dmg).Error; err != nil {
 		return nil, err
 	}
 
-	return dmg.ToModel(dmgus), nil
+	return dmg.ToModel(datamodel.GroupUsers{}), nil
 }
 
 func (r *dbGroupRepository) Update(g *model.Group) error {
@@ -65,5 +50,19 @@ func (r *dbGroupRepository) Update(g *model.Group) error {
 }
 
 func (r *dbGroupRepository) Delete(gID model.GroupID) error {
+	return nil
+}
+
+func (r *dbGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {
+	dmgus := datamodel.NewGroupUsers(gID, uIDs)
+
+	if err := r.db.Create(dmgus).Error; err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *dbGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) error {
 	return nil
 }
