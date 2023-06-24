@@ -8,6 +8,7 @@ import (
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
+	mockfactory "github.com/toshiykst/go-layerd-architecture/app/mock/domain/factory"
 	mockrepository "github.com/toshiykst/go-layerd-architecture/app/mock/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
@@ -89,7 +90,7 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			r := tt.newMockRepository()
-			uc := NewGroupUsecase(r)
+			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl))
 			got, err := uc.GetGroup(tt.in)
 			if tt.wantErr != nil {
 				if err == nil {

@@ -48,7 +48,8 @@ func main() {
 	e.PUT("/users/:id", uh.UpdateUser)
 	e.DELETE("/users/:id", uh.DeleteUser)
 
-	guc := usecase.NewGroupUsecase(db)
+	gf := factory.NewGroupFactory()
+	guc := usecase.NewGroupUsecase(db, gf)
 	gh := handler.NewGroupHandler(guc)
 
 	e.GET("/groups/:id", gh.GetGroup)

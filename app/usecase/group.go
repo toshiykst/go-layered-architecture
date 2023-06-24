@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/gommon/log"
 
+	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
@@ -21,12 +22,14 @@ type GroupUsecase interface {
 
 type groupUsecase struct {
 	r repository.Repository
+	f factory.GroupFactory
 }
 
 func NewGroupUsecase(
 	r repository.Repository,
+	f factory.GroupFactory,
 ) GroupUsecase {
-	return &groupUsecase{r: r}
+	return &groupUsecase{r: r, f: f}
 }
 
 var (
