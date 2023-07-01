@@ -16,3 +16,11 @@ func convertUsersToDTO(us model.Users) []dto.User {
 	}
 	return result
 }
+
+func toModelUserIDs(ids []string) []model.UserID {
+	uIDs := make([]model.UserID, len(ids))
+	for i, id := range ids {
+		uIDs[i] = model.UserID(id)
+	}
+	return uIDs
+}
