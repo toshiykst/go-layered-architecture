@@ -8,13 +8,14 @@ import (
 
 type UserService interface {
 	Exists(uID model.UserID) (bool, error)
+	ExistsAll(uIDs []model.UserID) (bool, error)
 }
 
 type userService struct {
 	r repository.Repository
 }
 
-func NewUserService(r repository.Repository) *userService {
+func NewUserService(r repository.Repository) UserService {
 	return &userService{r: r}
 }
 

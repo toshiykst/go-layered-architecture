@@ -48,3 +48,18 @@ func (mr *MockUserServiceMockRecorder) Exists(uID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockUserService)(nil).Exists), uID)
 }
+
+// ExistsAll mocks base method.
+func (m *MockUserService) ExistsAll(uIDs []model.UserID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExistsAll", uIDs)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExistsAll indicates an expected call of ExistsAll.
+func (mr *MockUserServiceMockRecorder) ExistsAll(uIDs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsAll", reflect.TypeOf((*MockUserService)(nil).ExistsAll), uIDs)
+}
