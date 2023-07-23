@@ -28,3 +28,18 @@ func (us *userService) Exists(uID model.UserID) (bool, error) {
 	}
 	return true, nil
 }
+
+func (us *userService) ExistsAll(uIDs []model.UserID) (bool, error) {
+	users, err := us.r.User().List(repository.UserListFilter{
+		UserIDs: uIDs,
+	})
+	if err != nil {
+		return false, err
+	}
+
+	if len(users) != len(uIDs) {
+		return false, nil
+	}
+
+	return true, nil
+}
