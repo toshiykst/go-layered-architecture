@@ -2,8 +2,6 @@
 package usecase
 
 import (
-	"errors"
-
 	"github.com/labstack/gommon/log"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
@@ -34,10 +32,6 @@ func NewUserUsecase(
 ) UserUsecase {
 	return &userUsecase{r: r, f: f, s: s}
 }
-
-var (
-	ErrUserNotFound = errors.New("user not found")
-)
 
 func (uc *userUsecase) CreateUser(in *dto.CreateUserInput) (*dto.CreateUserOutput, error) {
 	u, err := uc.f.Create(in.Name, in.Email)

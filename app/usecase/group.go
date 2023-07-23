@@ -2,8 +2,6 @@
 package usecase
 
 import (
-	"errors"
-
 	"github.com/labstack/gommon/log"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
@@ -34,11 +32,6 @@ func NewGroupUsecase(
 ) GroupUsecase {
 	return &groupUsecase{r: r, f: f, us: us}
 }
-
-var (
-	ErrGroupNotFound  = errors.New("group not found")
-	ErrInvalidUserIDs = errors.New("invalid user ids")
-)
 
 func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupOutput, error) {
 	g, err := uc.f.Create(in.Name)
