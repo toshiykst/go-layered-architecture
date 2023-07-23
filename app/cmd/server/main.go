@@ -49,7 +49,7 @@ func main() {
 	e.DELETE("/users/:id", uh.DeleteUser)
 
 	gf := factory.NewGroupFactory()
-	guc := usecase.NewGroupUsecase(db, gf)
+	guc := usecase.NewGroupUsecase(db, gf, us)
 	gh := handler.NewGroupHandler(guc)
 
 	e.GET("/groups/:id", gh.GetGroup)

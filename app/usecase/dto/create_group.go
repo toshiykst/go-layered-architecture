@@ -2,7 +2,8 @@ package dto
 
 type (
 	CreateGroupInput struct {
-		Name string
+		Name    string
+		UserIDs []string
 	}
 
 	CreateGroupOutput struct {

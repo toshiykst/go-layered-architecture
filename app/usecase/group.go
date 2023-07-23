@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/gommon/log"
 
+	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
@@ -21,23 +22,73 @@ type GroupUsecase interface {
 }
 
 type groupUsecase struct {
-	r repository.Repository
-	f factory.GroupFactory
+	r  repository.Repository
+	f  factory.GroupFactory
+	us domainservice.UserService
 }
 
 func NewGroupUsecase(
 	r repository.Repository,
 	f factory.GroupFactory,
+	us domainservice.UserService,
 ) GroupUsecase {
-	return &groupUsecase{r: r, f: f}
+	return &groupUsecase{r: r, f: f, us: us}
 }
 
 var (
-	ErrGroupNotFound = errors.New("group not found")
+	ErrGroupNotFound  = errors.New("group not found")
+	ErrInvalidUserIDs = errors.New("invalid user ids")
 )
 
 func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupOutput, error) {
-	return nil, nil
+	g, err := uc.f.Create(in.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	uIDs := toModelUserIDs(in.UserIDs)
+
+	if len(uIDs) > 0 {
+		ok, err := uc.us.ExistsAll(uIDs)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			return nil, ErrInvalidUserIDs
+		}
+	}
+
+	var created *model.Group
+	if err = uc.r.RunTransaction(func(tx repository.Transaction) error {
+		if created, err = tx.Group().Create(g); err != nil {
+			return err
+		}
+
+		if len(uIDs) > 0 {
+			if err = tx.Group().AddUsers(created.ID(), uIDs); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	us, err := uc.r.User().List(repository.UserListFilter{
+		UserIDs: uIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &dto.CreateGroupOutput{
+		Group: dto.Group{
+			GroupID: string(created.ID()),
+			Name:    created.Name(),
+			Users:   convertUsersToDTO(us),
+		},
+	}, nil
 }
 
 func (uc *groupUsecase) GetGroup(in *dto.GetGroupInput) (*dto.GetGroupOutput, error) {
