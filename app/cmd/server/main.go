@@ -52,6 +52,7 @@ func main() {
 	guc := usecase.NewGroupUsecase(db, gf, us)
 	gh := handler.NewGroupHandler(guc)
 
+	e.POST("/groups", gh.CreateGroup)
 	e.GET("/groups/:id", gh.GetGroup)
 
 	e.Logger.Fatal(e.Start(":8080"))
