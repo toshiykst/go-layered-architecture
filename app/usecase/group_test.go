@@ -42,6 +42,11 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			wantErr: nil,
 			newMockRepository: func() repository.Repository {
 				s := mockrepository.NewStore()
+				s.AddUsers(
+					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+				)
 				r := mockrepository.NewMockRepository(s)
 				return r
 			},

@@ -68,11 +68,14 @@ func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupO
 		return nil, err
 	}
 
-	us, err := uc.r.User().List(repository.UserListFilter{
-		UserIDs: uIDs,
-	})
-	if err != nil {
-		return nil, err
+	var us model.Users
+	if len(uIDs) > 0 {
+		us, err = uc.r.User().List(repository.UserListFilter{
+			UserIDs: uIDs,
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &dto.CreateGroupOutput{
