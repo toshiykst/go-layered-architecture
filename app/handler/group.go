@@ -22,7 +22,7 @@ func NewGroupHandler(uc usecase.GroupUsecase) *GroupHandler {
 type (
 	CreateGroupRequest struct {
 		Name    string   `json:"name"`
-		UserIDs []string `json:"user_ids"`
+		UserIDs []string `json:"userIds"`
 	}
 
 	CreateGroupResponse struct {
