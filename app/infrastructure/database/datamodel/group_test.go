@@ -105,3 +105,134 @@ func TestGroup_ToModel(t *testing.T) {
 		})
 	}
 }
+
+func TestGroups_IDs(t *testing.T) {
+	tests := []struct {
+		name   string
+		groups Groups
+		want   []string
+	}{
+		{
+			name: "Returns group ids",
+			groups: Groups{
+				{
+					ID:   "TEST_GROUP_ID_1",
+					Name: "TEST_GROUP_NAME_1",
+				},
+				{
+					ID:   "TEST_GROUP_ID_2",
+					Name: "TEST_GROUP_NAME_2",
+				},
+				{
+					ID:   "TEST_GROUP_ID_3",
+					Name: "TEST_GROUP_NAME_3",
+				},
+			},
+			want: []string{
+				"TEST_GROUP_ID_1",
+				"TEST_GROUP_ID_2",
+				"TEST_GROUP_ID_3",
+			},
+		},
+		{
+			name:   "Returns nil when the receiver is nil",
+			groups: nil,
+			want:   nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := tt.groups
+			got := gs.IDs()
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf(
+					"gs.IDs()=%v; want=%v,receiver=%v\ndiffers: (-got +want)\n%s",
+					got, tt.want, gs, diff,
+				)
+			}
+		})
+	}
+}
+
+func TestGroups_ToModel(t *testing.T) {
+	type args struct {
+		gus GroupUsers
+	}
+	tests := []struct {
+		name   string
+		groups Groups
+		args   args
+		want   model.Groups
+	}{
+		{
+			name: "Convert to model.Groups",
+			groups: Groups{
+				{
+					ID:   "TEST_GROUP_ID_1",
+					Name: "TEST_GROUP_NAME_1",
+				},
+				{
+					ID:   "TEST_GROUP_ID_2",
+					Name: "TEST_GROUP_NAME_2",
+				},
+				{
+					ID:   "TEST_GROUP_ID_3",
+					Name: "TEST_GROUP_NAME_3",
+				},
+			},
+			args: args{
+				gus: GroupUsers{
+					{
+						GroupID: "TEST_GROUP_ID_1",
+						UserID:  "TEST_USER_ID_1",
+					},
+					{
+						GroupID: "TEST_GROUP_ID_2",
+						UserID:  "TEST_USER_ID_2",
+					},
+					{
+						GroupID: "TEST_GROUP_ID_3",
+						UserID:  "TEST_USER_ID_3",
+					},
+				},
+			},
+			want: model.Groups{
+				model.NewGroup(
+					"TEST_GROUP_ID_1",
+					"TEST_GROUP_NAME_1",
+					[]model.UserID{"TEST_USER_ID_1"},
+				),
+				model.NewGroup(
+					"TEST_GROUP_ID_2",
+					"TEST_GROUP_NAME_2",
+					[]model.UserID{"TEST_USER_ID_2"},
+				),
+				model.NewGroup(
+					"TEST_GROUP_ID_3",
+					"TEST_GROUP_NAME_3",
+					[]model.UserID{"TEST_USER_ID_3"},
+				),
+			},
+		},
+		{
+			name: "Returns nil when the receiver is nil",
+			args: args{
+				gus: GroupUsers{},
+			},
+			groups: nil,
+			want:   nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := tt.groups
+			got := gs.ToModel(tt.args.gus)
+			if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.Group{})); diff != "" {
+				t.Errorf(
+					"gs.ToModel(%v)=%v; want=%v,receiver=%v\ndiffers: (-got +want)\n%s",
+					tt.args.gus, got, tt.want, gs, diff,
+				)
+			}
+		})
+	}
+}
