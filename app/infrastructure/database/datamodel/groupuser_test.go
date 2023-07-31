@@ -93,7 +93,7 @@ func TestNewGroupUsers(t *testing.T) {
 	}
 }
 
-func TestGroupUsers_UserIDs(t *testing.T) {
+func TestGroupUsers_ModelUserIDs(t *testing.T) {
 	tests := []struct {
 		name string
 		gus  GroupUsers
@@ -125,10 +125,61 @@ func TestGroupUsers_UserIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := tt.gus.UserIDs()
+			got := tt.gus.ModelUserIDs()
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf(
 					"gus.UserIDs()=%v; want %v, receiver=%v\ndiffers: (-got +want)\n%s",
+					got, tt.want, tt.gus, diff,
+				)
+			}
+		})
+	}
+}
+
+func TestGroupUsers_ModelUserIDsByGroupID(t *testing.T) {
+	tests := []struct {
+		name string
+		gus  GroupUsers
+		want map[string][]model.UserID
+	}{
+		{
+			name: "Returns map of group ids by user id",
+			gus: GroupUsers{
+				{
+					GroupID: "TEST_GROUP_ID_1",
+					UserID:  "TEST_USER_ID_1",
+				},
+				{
+					GroupID: "TEST_GROUP_ID_2",
+					UserID:  "TEST_USER_ID_2",
+				},
+				{
+					GroupID: "TEST_GROUP_ID_3",
+					UserID:  "TEST_USER_ID_3",
+				},
+				{
+					GroupID: "TEST_GROUP_ID_1",
+					UserID:  "TEST_USER_ID_4",
+				},
+				{
+					GroupID: "TEST_GROUP_ID_2",
+					UserID:  "TEST_USER_ID_5",
+				},
+			},
+			want: map[string][]model.UserID{
+				"TEST_GROUP_ID_1": {"TEST_USER_ID_1", "TEST_USER_ID_4"},
+				"TEST_GROUP_ID_2": {"TEST_USER_ID_2", "TEST_USER_ID_5"},
+				"TEST_GROUP_ID_3": {"TEST_USER_ID_3"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.gus.ModelUserIDsByGroupID()
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf(
+					"gus.ModelUserIDsByGroupID()=%v; want %v, receiver=%v\ndiffers: (-got +want)\n%s",
 					got, tt.want, tt.gus, diff,
 				)
 			}

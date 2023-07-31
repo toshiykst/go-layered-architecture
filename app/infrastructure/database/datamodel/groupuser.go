@@ -24,10 +24,25 @@ func NewGroupUsers(gID model.GroupID, uIDs []model.UserID) GroupUsers {
 	return gus
 }
 
-func (gus GroupUsers) UserIDs() []model.UserID {
+func (gus GroupUsers) ModelUserIDs() []model.UserID {
 	uIDs := make([]model.UserID, len(gus))
 	for i, v := range gus {
 		uIDs[i] = model.UserID(v.UserID)
 	}
 	return uIDs
+}
+
+func (gus GroupUsers) ModelUserIDsByGroupID() map[string][]model.UserID {
+	result := make(map[string][]model.UserID, len(gus))
+	for _, gu := range gus {
+		gID := gu.GroupID
+		var uIDs []model.UserID
+		if found, ok := result[gID]; ok {
+			uIDs = append(found, model.UserID(gu.UserID))
+		} else {
+			uIDs = []model.UserID{model.UserID(gu.UserID)}
+		}
+		result[gID] = uIDs
+	}
+	return result
 }
