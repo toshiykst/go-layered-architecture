@@ -38,3 +38,14 @@ func (g *Group) UserIDs() []UserID {
 }
 
 type Groups []*Group
+
+func (gs Groups) IDs() []GroupID {
+	if gs == nil {
+		return nil
+	}
+	gIDs := make([]GroupID, len(gs))
+	for i, g := range gs {
+		gIDs[i] = g.ID()
+	}
+	return gIDs
+}
