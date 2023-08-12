@@ -129,9 +129,9 @@ func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, 
 
 	uIDs := gs.UserIDs()
 	if len(uIDs) == 0 {
-		dtoGs := make([]dto.Group, len(gs))
+		dtogs := make([]dto.Group, len(gs))
 		for i, g := range gs {
-			dtoGs[i] = dto.Group{
+			dtogs[i] = dto.Group{
 				GroupID: string(g.ID()),
 				Name:    g.Name(),
 				Users:   []dto.User{},
@@ -139,7 +139,7 @@ func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, 
 		}
 
 		return &dto.GetGroupsOutput{
-			Groups: dtoGs,
+			Groups: dtogs,
 		}, nil
 	}
 
@@ -151,7 +151,7 @@ func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, 
 	}
 
 	usByUID := us.ByUserID()
-	dtoGs := make([]dto.Group, len(gs))
+	dtogs := make([]dto.Group, len(gs))
 	for i, g := range gs {
 		guIDs := g.UserIDs()
 		gus := make(model.Users, len(guIDs))
@@ -160,7 +160,7 @@ func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, 
 				gus[j] = gu
 			}
 		}
-		dtoGs[i] = dto.Group{
+		dtogs[i] = dto.Group{
 			GroupID: string(g.ID()),
 			Name:    g.Name(),
 			Users:   dto.ToUsersFromModel(gus),
@@ -168,7 +168,7 @@ func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, 
 	}
 
 	return &dto.GetGroupsOutput{
-		Groups: dtoGs,
+		Groups: dtogs,
 	}, nil
 }
 
