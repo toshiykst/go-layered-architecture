@@ -94,3 +94,27 @@ func (h *GroupHandler) GetGroup(c echo.Context) error {
 		},
 	})
 }
+
+type GetGroupsResponse struct {
+	Groups []response.Group `json:"groups"`
+}
+
+func (h *GroupHandler) GetGroups(c echo.Context) error {
+	out, err := h.uc.GetGroups(nil)
+	if err != nil {
+		return response.ErrorInternal(c, err)
+	}
+
+	gs := make([]response.Group, len(out.Groups))
+	for i, g := range out.Groups {
+		gs[i] = response.Group{
+			GroupID: g.GroupID,
+			Name:    g.Name,
+			Users:   response.ToUsersFromDTO(g.Users),
+		}
+	}
+
+	return response.OK(c, &GetGroupsResponse{
+		Groups: gs,
+	})
+}

@@ -436,3 +436,215 @@ func TestGroupHandler_GetGroup(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupHandler_GetGroups(t *testing.T) {
+	tests := []struct {
+		name            string
+		newGroupUsecase func(ctrl *gomock.Controller) usecase.GroupUsecase
+		wantStatus      int
+		wantRes         *GetGroupsResponse
+		wantErrRes      *response.ErrorResponse
+	}{
+		{
+			name: "Returns groups response",
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					GetGroups(gomock.Any()).
+					DoAndReturn(func(in *dto.GetGroupsInput) (*dto.GetGroupsOutput, error) {
+						return &dto.GetGroupsOutput{
+							Groups: []dto.Group{
+								{
+									GroupID: "TEST_GROUP_ID_1",
+									Name:    "TEST_GROUP_NAME_1",
+									Users: []dto.User{
+										{
+											UserID: "TEST_USER_ID_1",
+											Name:   "TEST_USER_NAME_1",
+											Email:  "TEST_USER_EMAIL_1",
+										},
+									},
+								},
+								{
+									GroupID: "TEST_GROUP_ID_2",
+									Name:    "TEST_GROUP_NAME_2",
+									Users: []dto.User{
+										{
+											UserID: "TEST_USER_ID_1",
+											Name:   "TEST_USER_NAME_1",
+											Email:  "TEST_USER_EMAIL_1",
+										},
+										{
+											UserID: "TEST_USER_ID_2",
+											Name:   "TEST_USER_NAME_2",
+											Email:  "TEST_USER_EMAIL_2",
+										},
+									},
+								},
+								{
+									GroupID: "TEST_GROUP_ID_3",
+									Name:    "TEST_GROUP_NAME_3",
+									Users: []dto.User{
+										{
+											UserID: "TEST_USER_ID_1",
+											Name:   "TEST_USER_NAME_1",
+											Email:  "TEST_USER_EMAIL_1",
+										},
+										{
+											UserID: "TEST_USER_ID_2",
+											Name:   "TEST_USER_NAME_2",
+											Email:  "TEST_USER_EMAIL_2",
+										},
+										{
+											UserID: "TEST_USER_ID_3",
+											Name:   "TEST_USER_NAME_3",
+											Email:  "TEST_USER_EMAIL_3",
+										},
+									},
+								},
+							},
+						}, nil
+					})
+				return uc
+			},
+			wantStatus: http.StatusOK,
+			wantRes: &GetGroupsResponse{
+				Groups: []response.Group{
+					{
+						GroupID: "TEST_GROUP_ID_1",
+						Name:    "TEST_GROUP_NAME_1",
+						Users: []response.User{
+							{
+								UserID: "TEST_USER_ID_1",
+								Name:   "TEST_USER_NAME_1",
+								Email:  "TEST_USER_EMAIL_1",
+							},
+						},
+					},
+					{
+						GroupID: "TEST_GROUP_ID_2",
+						Name:    "TEST_GROUP_NAME_2",
+						Users: []response.User{
+							{
+								UserID: "TEST_USER_ID_1",
+								Name:   "TEST_USER_NAME_1",
+								Email:  "TEST_USER_EMAIL_1",
+							},
+							{
+								UserID: "TEST_USER_ID_2",
+								Name:   "TEST_USER_NAME_2",
+								Email:  "TEST_USER_EMAIL_2",
+							},
+						},
+					},
+					{
+						GroupID: "TEST_GROUP_ID_3",
+						Name:    "TEST_GROUP_NAME_3",
+						Users: []response.User{
+							{
+								UserID: "TEST_USER_ID_1",
+								Name:   "TEST_USER_NAME_1",
+								Email:  "TEST_USER_EMAIL_1",
+							},
+							{
+								UserID: "TEST_USER_ID_2",
+								Name:   "TEST_USER_NAME_2",
+								Email:  "TEST_USER_EMAIL_2",
+							},
+							{
+								UserID: "TEST_USER_ID_3",
+								Name:   "TEST_USER_NAME_3",
+								Email:  "TEST_USER_EMAIL_3",
+							},
+						},
+					},
+				},
+			},
+			wantErrRes: nil,
+		},
+		{
+			name: "Returns internal server error response",
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					GetGroups(gomock.Any()).
+					Return(nil, errors.New("an error occurred"))
+				return uc
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantRes:    nil,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInternalServerError,
+				Status:  http.StatusInternalServerError,
+				Message: "an error occurred",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(
+				http.MethodGet,
+				"https://example.com:8080/groups",
+				nil,
+			)
+			req.Header.Set("Content-Type", "application/json")
+
+			rec := httptest.NewRecorder()
+
+			e := echo.New()
+			c := e.NewContext(req, rec)
+			c.SetPath("/groups")
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			uc := tt.newGroupUsecase(ctrl)
+
+			h := NewGroupHandler(uc)
+
+			err := h.GetGroups(c)
+			if err != nil {
+				t.Fatalf("want no err, but has error: %v", err)
+			}
+
+			res := rec.Result()
+
+			wantStatusCode := tt.wantStatus
+			gotStatusCode := res.StatusCode
+			if gotStatusCode != wantStatusCode {
+				t.Errorf("statusCode got = %d, want = %d", gotStatusCode, wantStatusCode)
+			}
+
+			resBody, err := io.ReadAll(rec.Body)
+			if err != nil {
+				t.Fatalf("Failed to read body: %s", err.Error())
+			}
+			defer func(Body io.ReadCloser) {
+				if err := Body.Close(); err != nil {
+					t.Fatalf("Failed to close body: %s", err.Error())
+				}
+			}(res.Body)
+
+			if tt.wantRes != nil {
+				var got *GetGroupsResponse
+				_ = json.Unmarshal(resBody, &got)
+				if diff := cmp.Diff(got, tt.wantRes); diff != "" {
+					t.Errorf(
+						"response body: got = %v, want = %v\ndiffers: (-got +want)\n%s",
+						got, tt.wantRes, diff,
+					)
+				}
+			}
+
+			if tt.wantErrRes != nil {
+				var got *response.ErrorResponse
+				_ = json.Unmarshal(resBody, &got)
+				if diff := cmp.Diff(got, tt.wantErrRes); diff != "" {
+					t.Errorf(
+						"error response body: got = %v, want = %v\ndiffers: (-got +want)\n%s",
+						got, tt.wantErrRes, diff,
+					)
+				}
+			}
+		})
+	}
+}

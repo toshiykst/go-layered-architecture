@@ -54,6 +54,7 @@ func main() {
 
 	e.POST("/groups", gh.CreateGroup)
 	e.GET("/groups/:id", gh.GetGroup)
+	e.GET("/groups", gh.GetGroups)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
