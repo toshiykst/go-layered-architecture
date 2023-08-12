@@ -61,6 +61,16 @@ func (r *dbGroupRepository) Create(g *model.Group) (*model.Group, error) {
 }
 
 func (r *dbGroupRepository) Update(g *model.Group) error {
+	if g.ID() == "" {
+		return errors.New("group id must not be empty")
+	}
+	if err := r.db.Model(&datamodel.Group{ID: string(g.ID())}).
+		Updates(map[string]any{
+			"name": g.Name(),
+		}).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 

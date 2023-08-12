@@ -1,6 +1,8 @@
 package mockrepository
 
 import (
+	"errors"
+
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 )
 
@@ -27,6 +29,17 @@ func (r *mockGroupRepository) Create(g *model.Group) (*model.Group, error) {
 }
 
 func (r *mockGroupRepository) Update(g *model.Group) error {
+	if g.ID() == "" {
+		return errors.New("group id must not be empty")
+	}
+
+	for i, group := range r.s.groups {
+		if group.ID() == g.ID() {
+			r.s.groups[i] = g
+			break
+		}
+	}
+
 	return nil
 }
 

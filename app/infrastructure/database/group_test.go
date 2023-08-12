@@ -402,6 +402,62 @@ func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 	}
 }
 
+func TestDatabase_dbGroupRepository_Update(t *testing.T) {
+	tests := []struct {
+		name    string
+		group   *model.Group
+		wantErr error
+	}{
+		{
+			name:    "Updates a group",
+			group:   model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}),
+			wantErr: nil,
+		},
+		{
+			name:    "Error",
+			group:   model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}),
+			wantErr: errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			expectExec := mock.
+				ExpectExec(regexp.QuoteMeta("UPDATE `groups` SET `name`=? WHERE `id` = ?")).
+				WithArgs(tt.group.Name(), tt.group.ID())
+
+			if tt.wantErr != nil {
+				expectExec.WillReturnError(tt.wantErr)
+			} else {
+				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			r := &dbGroupRepository{db: db}
+			err = r.Update(tt.group)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no error, but has error %v", err)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 	type args struct {
 		gID  model.GroupID
