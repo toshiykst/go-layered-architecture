@@ -81,7 +81,7 @@ func TestDatabase_dbUserRepository_Find(t *testing.T) {
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no errpr, but has error %v", err)
+					t.Fatalf("want no error, but has error %v", err)
 				}
 				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.User{})); diff != "" {
 					t.Errorf(
@@ -202,7 +202,7 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no errpr, but has error %v", err)
+					t.Fatalf("want no error, but has error %v", err)
 				}
 				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.User{})); diff != "" {
 					t.Errorf(
@@ -270,7 +270,7 @@ func TestDatabase_dbUserRepository_Create(t *testing.T) {
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no errpr, but has error %v", err)
+					t.Fatalf("want no error, but has error %v", err)
 				}
 				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.User{})); diff != "" {
 					t.Errorf(
@@ -393,7 +393,7 @@ func TestDatabase_dbUserRepository_Delete(t *testing.T) {
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no errpr, but has error %v", err)
+					t.Fatalf("want no error, but has error %v", err)
 				}
 			}
 
