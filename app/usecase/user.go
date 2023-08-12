@@ -86,7 +86,7 @@ func (uc *userUsecase) GetUsers(_ *dto.GetUsersInput) (*dto.GetUsersOutput, erro
 	}
 
 	return &dto.GetUsersOutput{
-		Users: convertUsersToDTO(us),
+		Users: dto.ToUsersFromModel(us),
 	}, nil
 }
 

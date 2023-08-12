@@ -1,4 +1,4 @@
-package usecase
+package dto
 
 import (
 	"testing"
@@ -6,14 +6,13 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
-	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
-func Test_convertUsersToDTO(t *testing.T) {
+func TestToUsersFromModel(t *testing.T) {
 	tests := []struct {
 		name string
 		us   model.Users
-		want []dto.User
+		want []User
 	}{
 		{
 			name: "Convert model users to dto users",
@@ -34,7 +33,7 @@ func Test_convertUsersToDTO(t *testing.T) {
 					"TEST_USER_EMAIL_3",
 				),
 			},
-			want: []dto.User{
+			want: []User{
 				{
 					UserID: "TEST_USER_ID_1",
 					Name:   "TEST_USER_NAME_1",
@@ -56,10 +55,10 @@ func Test_convertUsersToDTO(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := convertUsersToDTO(tt.us)
+			got := ToUsersFromModel(tt.us)
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf(
-					"convertUsersToDTO(%v)=%v; want %v\ndiffers: (-got +want)\n%s",
+					"ToUsersFromModel(%v)=%v; want %v\ndiffers: (-got +want)\n%s",
 					tt.us, got, tt.want, diff,
 				)
 			}
@@ -67,7 +66,7 @@ func Test_convertUsersToDTO(t *testing.T) {
 	}
 }
 
-func Test_toModelUserIDs(t *testing.T) {
+func TestToModelUserIDs(t *testing.T) {
 	tests := []struct {
 		name string
 		ids  []string
@@ -90,7 +89,7 @@ func Test_toModelUserIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := toModelUserIDs(tt.ids)
+			got := ToModelUserIDs(tt.ids)
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf(
 					"toModelUserIDs(%v)=%v; want %v\ndiffers: (-got +want)\n%s",

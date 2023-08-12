@@ -39,7 +39,7 @@ func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupO
 		return nil, err
 	}
 
-	uIDs := toModelUserIDs(in.UserIDs)
+	uIDs := dto.ToModelUserIDs(in.UserIDs)
 
 	if len(uIDs) > 0 {
 		ok, err := uc.us.ExistsAll(uIDs)
@@ -82,7 +82,7 @@ func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupO
 		Group: dto.Group{
 			GroupID: string(created.ID()),
 			Name:    created.Name(),
-			Users:   convertUsersToDTO(us),
+			Users:   dto.ToUsersFromModel(us),
 		},
 	}, nil
 }
@@ -111,7 +111,7 @@ func (uc *groupUsecase) GetGroup(in *dto.GetGroupInput) (*dto.GetGroupOutput, er
 		Group: dto.Group{
 			GroupID: string(g.ID()),
 			Name:    g.Name(),
-			Users:   convertUsersToDTO(us),
+			Users:   dto.ToUsersFromModel(us),
 		},
 	}, nil
 }
@@ -163,7 +163,7 @@ func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, 
 		dtoGs[i] = dto.Group{
 			GroupID: string(g.ID()),
 			Name:    g.Name(),
-			Users:   convertUsersToDTO(gus),
+			Users:   dto.ToUsersFromModel(gus),
 		}
 	}
 
