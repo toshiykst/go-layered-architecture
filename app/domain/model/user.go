@@ -38,3 +38,11 @@ func (u *User) Email() string {
 }
 
 type Users []*User
+
+func (us Users) ByUserID() map[UserID]*User {
+	result := make(map[UserID]*User, len(us))
+	for _, u := range us {
+		result[u.ID()] = u
+	}
+	return result
+}
