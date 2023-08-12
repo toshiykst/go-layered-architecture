@@ -294,7 +294,7 @@ func TestDatabase_dbUserRepository_Update(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name:    "Creates a new user",
+			name:    "Updates a user",
 			user:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
 			wantErr: nil,
 		},
@@ -315,8 +315,8 @@ func TestDatabase_dbUserRepository_Update(t *testing.T) {
 			defer sqlDB.Close()
 
 			expectExec := mock.
-				ExpectExec(regexp.QuoteMeta("UPDATE `users` SET `name`=?,`email`=? WHERE `id`=?")).
-				WithArgs(tt.user.Name(), tt.user.Email(), tt.user.ID())
+				ExpectExec(regexp.QuoteMeta("UPDATE `users` SET `email`=?,`name`=? WHERE `id` = ?")).
+				WithArgs(tt.user.Email(), tt.user.Name(), tt.user.ID())
 
 			if tt.wantErr != nil {
 				expectExec.WillReturnError(tt.wantErr)
@@ -332,7 +332,7 @@ func TestDatabase_dbUserRepository_Update(t *testing.T) {
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no errpr, but has error %v", err)
+					t.Fatalf("want no error, but has error %v", err)
 				}
 			}
 

@@ -56,10 +56,11 @@ func (r *dbUserRepository) Update(u *model.User) error {
 		return errors.New("user id must not be empty")
 	}
 
-	if err := r.db.Model(&datamodel.User{}).Where("`id`=?", u.ID()).Updates(datamodel.User{
-		Name:  u.Name(),
-		Email: u.Email(),
-	}).Error; err != nil {
+	if err := r.db.Model(&datamodel.User{ID: string(u.ID())}).
+		Updates(map[string]any{
+			"name":  u.Name(),
+			"email": u.Email(),
+		}).Error; err != nil {
 		return err
 	}
 
