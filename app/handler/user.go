@@ -96,17 +96,8 @@ func (h *UserHandler) GetUsers(c echo.Context) error {
 		return response.ErrorInternal(c, err)
 	}
 
-	us := make([]response.User, len(out.Users))
-	for i, ou := range out.Users {
-		us[i] = response.User{
-			UserID: ou.UserID,
-			Name:   ou.Name,
-			Email:  ou.Email,
-		}
-	}
-
 	return response.OK(c, &GetUsersResponse{
-		Users: us,
+		Users: response.ToUsersFromDTO(out.Users),
 	})
 }
 

@@ -86,20 +86,11 @@ func (h *GroupHandler) GetGroup(c echo.Context) error {
 		}
 	}
 
-	us := make([]response.User, len(out.Group.Users))
-	for i, u := range out.Group.Users {
-		us[i] = response.User{
-			UserID: u.UserID,
-			Name:   u.Name,
-			Email:  u.Email,
-		}
-	}
-
 	return response.OK(c, &GetGroupResponse{
 		Group: response.Group{
 			GroupID: out.Group.GroupID,
 			Name:    out.Group.Name,
-			Users:   us,
+			Users:   response.ToUsersFromDTO(out.Group.Users),
 		},
 	})
 }
