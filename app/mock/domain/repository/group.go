@@ -17,8 +17,8 @@ func (r *mockGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
 	return nil, nil
 }
 
-func (r *mockGroupRepository) List() ([]*model.Group, error) {
-	return nil, nil
+func (r *mockGroupRepository) List() (model.Groups, error) {
+	return r.s.groups, nil
 }
 
 func (r *mockGroupRepository) Create(g *model.Group) (*model.Group, error) {

@@ -31,8 +31,23 @@ func (r *dbGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
 	return dmg.ToModel(dmgus), nil
 }
 
-func (r *dbGroupRepository) List() ([]*model.Group, error) {
-	return nil, nil
+func (r *dbGroupRepository) List() (model.Groups, error) {
+	db := r.db
+
+	var dmgs datamodel.Groups
+	if err := db.Find(&dmgs).Error; err != nil {
+		return nil, err
+	}
+	if len(dmgs) == 0 {
+		return nil, nil
+	}
+
+	var dmgus datamodel.GroupUsers
+	if err := r.db.Where("group_id IN (?)", dmgs.IDs()).Find(&dmgus).Error; err != nil {
+		return nil, err
+	}
+
+	return dmgs.ToModel(dmgus), nil
 }
 
 func (r *dbGroupRepository) Create(g *model.Group) (*model.Group, error) {
