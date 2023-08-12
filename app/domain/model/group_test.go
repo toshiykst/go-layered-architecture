@@ -138,3 +138,75 @@ func TestGroups_IDs(t *testing.T) {
 		})
 	}
 }
+
+func TestGroups_UserIDs(t *testing.T) {
+	tests := []struct {
+		name   string
+		groups Groups
+		want   []UserID
+	}{
+		{
+			name: "Returns user ids",
+			groups: Groups{
+				NewGroup(
+					"TEST_GROUP_ID_1",
+					"TEST_GROUP_NAME_1",
+					[]UserID{"TEST_USER_ID_1"},
+				),
+				NewGroup(
+					"TEST_GROUP_ID_2",
+					"TEST_GROUP_NAME_2",
+					[]UserID{"TEST_USER_ID_1", "TEST_USER_ID_2"},
+				),
+				NewGroup(
+					"TEST_GROUP_ID_3",
+					"TEST_GROUP_NAME_3",
+					[]UserID{"TEST_USER_ID_1", "TEST_USER_ID_2", "TEST_USER_ID_3"},
+				),
+			},
+			want: []UserID{
+				"TEST_USER_ID_1",
+				"TEST_USER_ID_2",
+				"TEST_USER_ID_3",
+			},
+		},
+		{
+			name: "Returns nil when all groups have no user ids",
+			groups: Groups{
+				NewGroup(
+					"TEST_GROUP_ID_1",
+					"TEST_GROUP_NAME_1",
+					[]UserID{},
+				),
+				NewGroup(
+					"TEST_GROUP_ID_2",
+					"TEST_GROUP_NAME_2",
+					[]UserID{},
+				),
+				NewGroup(
+					"TEST_GROUP_ID_3",
+					"TEST_GROUP_NAME_3",
+					[]UserID{},
+				),
+			},
+			want: nil,
+		},
+		{
+			name:   "Returns nil when the receiver is nil",
+			groups: nil,
+			want:   nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gs := tt.groups
+			got := gs.UserIDs()
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf(
+					"gs.UserIDs()=%v; want=%v,receiver=%v\ndiffers: (-got +want)\n%s",
+					got, tt.want, gs, diff,
+				)
+			}
+		})
+	}
+}

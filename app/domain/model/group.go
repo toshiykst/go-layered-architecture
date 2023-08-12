@@ -49,3 +49,20 @@ func (gs Groups) IDs() []GroupID {
 	}
 	return gIDs
 }
+
+func (gs Groups) UserIDs() []UserID {
+	if gs == nil {
+		return nil
+	}
+	m := make(map[UserID]struct{})
+	var uIDs []UserID
+	for _, g := range gs {
+		for _, uID := range g.UserIDs() {
+			if _, ok := m[uID]; !ok {
+				m[uID] = struct{}{}
+				uIDs = append(uIDs, uID)
+			}
+		}
+	}
+	return uIDs
+}
