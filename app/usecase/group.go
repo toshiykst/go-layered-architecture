@@ -117,7 +117,59 @@ func (uc *groupUsecase) GetGroup(in *dto.GetGroupInput) (*dto.GetGroupOutput, er
 }
 
 func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, error) {
-	return nil, nil
+	gs, err := uc.r.Group().List()
+	if err != nil {
+		return nil, err
+	}
+	if len(gs) == 0 {
+		return &dto.GetGroupsOutput{
+			Groups: []dto.Group{},
+		}, nil
+	}
+
+	uIDs := gs.UserIDs()
+	if len(uIDs) == 0 {
+		dtoGs := make([]dto.Group, len(gs))
+		for i, g := range gs {
+			dtoGs[i] = dto.Group{
+				GroupID: string(g.ID()),
+				Name:    g.Name(),
+				Users:   []dto.User{},
+			}
+		}
+
+		return &dto.GetGroupsOutput{
+			Groups: dtoGs,
+		}, nil
+	}
+
+	us, err := uc.r.User().List(repository.UserListFilter{
+		UserIDs: uIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	usByUID := us.ByUserID()
+	dtoGs := make([]dto.Group, len(gs))
+	for i, g := range gs {
+		guIDs := g.UserIDs()
+		gus := make(model.Users, len(guIDs))
+		for j, guID := range guIDs {
+			if gu, ok := usByUID[guID]; ok {
+				gus[j] = gu
+			}
+		}
+		dtoGs[i] = dto.Group{
+			GroupID: string(g.ID()),
+			Name:    g.Name(),
+			Users:   convertUsersToDTO(gus),
+		}
+	}
+
+	return &dto.GetGroupsOutput{
+		Groups: dtoGs,
+	}, nil
 }
 
 func (uc *groupUsecase) UpdateGroup(in *dto.UpdateGroupInput) (*dto.UpdateGroupOutput, error) {

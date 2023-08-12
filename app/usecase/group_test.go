@@ -282,3 +282,194 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupUsecase_GetGroups(t *testing.T) {
+	tests := []struct {
+		name              string
+		want              *dto.GetGroupsOutput
+		wantErr           error
+		newMockRepository func() repository.Repository
+	}{
+		{
+			name: "Returns groups",
+			want: &dto.GetGroupsOutput{
+				Groups: []dto.Group{
+					{
+						GroupID: "TEST_GROUP_ID_1",
+						Name:    "TEST_GROUP_NAME_1",
+						Users: []dto.User{
+							{
+								UserID: "TEST_USER_ID_1",
+								Name:   "TEST_USER_NAME_1",
+								Email:  "TEST_USER_EMAIL_1",
+							},
+						},
+					},
+					{
+						GroupID: "TEST_GROUP_ID_2",
+						Name:    "TEST_GROUP_NAME_2",
+						Users: []dto.User{
+							{
+								UserID: "TEST_USER_ID_1",
+								Name:   "TEST_USER_NAME_1",
+								Email:  "TEST_USER_EMAIL_1",
+							},
+							{
+								UserID: "TEST_USER_ID_2",
+								Name:   "TEST_USER_NAME_2",
+								Email:  "TEST_USER_EMAIL_2",
+							},
+						},
+					},
+					{
+						GroupID: "TEST_GROUP_ID_3",
+						Name:    "TEST_GROUP_NAME_3",
+						Users: []dto.User{
+							{
+								UserID: "TEST_USER_ID_1",
+								Name:   "TEST_USER_NAME_1",
+								Email:  "TEST_USER_EMAIL_1",
+							},
+							{
+								UserID: "TEST_USER_ID_2",
+								Name:   "TEST_USER_NAME_2",
+								Email:  "TEST_USER_EMAIL_2",
+							},
+							{
+								UserID: "TEST_USER_ID_3",
+								Name:   "TEST_USER_NAME_3",
+								Email:  "TEST_USER_EMAIL_3",
+							},
+						},
+					},
+				},
+			},
+			wantErr: nil,
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				s.AddGroups(
+					model.NewGroup(
+						"TEST_GROUP_ID_1",
+						"TEST_GROUP_NAME_1",
+						[]model.UserID{
+							"TEST_USER_ID_1",
+						},
+					),
+					model.NewGroup(
+						"TEST_GROUP_ID_2",
+						"TEST_GROUP_NAME_2",
+						[]model.UserID{
+							"TEST_USER_ID_1",
+							"TEST_USER_ID_2",
+						},
+					),
+					model.NewGroup(
+						"TEST_GROUP_ID_3",
+						"TEST_GROUP_NAME_3",
+						[]model.UserID{
+							"TEST_USER_ID_1",
+							"TEST_USER_ID_2",
+							"TEST_USER_ID_3",
+						},
+					),
+				)
+				s.AddUsers(
+					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+				)
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
+		{
+			name: "Returns empty groups if not exist",
+			want: &dto.GetGroupsOutput{
+				Groups: []dto.Group{},
+			},
+			wantErr: nil,
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
+		{
+			name: "Returns groups if all groups have no user ids",
+			want: &dto.GetGroupsOutput{
+				Groups: []dto.Group{
+					{
+						GroupID: "TEST_GROUP_ID_1",
+						Name:    "TEST_GROUP_NAME_1",
+						Users:   []dto.User{},
+					},
+					{
+						GroupID: "TEST_GROUP_ID_2",
+						Name:    "TEST_GROUP_NAME_2",
+						Users:   []dto.User{},
+					},
+					{
+						GroupID: "TEST_GROUP_ID_3",
+						Name:    "TEST_GROUP_NAME_3",
+						Users:   []dto.User{},
+					},
+				},
+			},
+			wantErr: nil,
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				s.AddGroups(
+					model.NewGroup(
+						"TEST_GROUP_ID_1",
+						"TEST_GROUP_NAME_1",
+						[]model.UserID{},
+					),
+					model.NewGroup(
+						"TEST_GROUP_ID_2",
+						"TEST_GROUP_NAME_2",
+						[]model.UserID{},
+					),
+					model.NewGroup(
+						"TEST_GROUP_ID_3",
+						"TEST_GROUP_NAME_3",
+						[]model.UserID{},
+					),
+				)
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			r := tt.newMockRepository()
+			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), mockdomainservice.NewMockUserService(ctrl))
+			in := &dto.GetGroupsInput{}
+			got, err := uc.GetGroups(in)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatal("want an error, but has no error")
+				}
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf(
+						"uc.GetGroups(%v)=_, %v; want _, %v",
+						in, got, tt.wantErr,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no err, but has error %v", err)
+				}
+				if diff := cmp.Diff(got, tt.want); diff != "" {
+					t.Errorf(
+						"uc.GetGroups(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
+						in, got, tt.want, diff,
+					)
+				}
+			}
+		})
+	}
+}
