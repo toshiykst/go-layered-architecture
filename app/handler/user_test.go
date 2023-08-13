@@ -489,6 +489,23 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 			wantErrRes: nil,
 		},
 		{
+			name: "Returns user not found error response",
+			uID:  "TEST_USER_ID",
+			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
+				uc := mockusecase.NewMockUserUsecase(ctrl)
+				uc.EXPECT().
+					UpdateUser(gomock.Any()).
+					Return(nil, usecase.ErrUserNotFound)
+				return uc
+			},
+			wantStatus: http.StatusNotFound,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeUserNotFound,
+				Status:  http.StatusNotFound,
+				Message: usecase.ErrUserNotFound.Error(),
+			},
+		},
+		{
 			name: "Returns internal server error response",
 			uID:  "TEST_USER_ID",
 			req: &UpdateUserRequest{
@@ -591,6 +608,23 @@ func TestUserHandler_DeleteUser(t *testing.T) {
 			},
 			wantStatus: http.StatusNoContent,
 			wantErrRes: nil,
+		},
+		{
+			name: "Returns user not found error response",
+			uID:  "TEST_USER_ID",
+			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
+				uc := mockusecase.NewMockUserUsecase(ctrl)
+				uc.EXPECT().
+					DeleteUser(gomock.Any()).
+					Return(nil, usecase.ErrUserNotFound)
+				return uc
+			},
+			wantStatus: http.StatusNotFound,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeUserNotFound,
+				Status:  http.StatusNotFound,
+				Message: usecase.ErrUserNotFound.Error(),
+			},
 		},
 		{
 			name: "Returns internal server error response",

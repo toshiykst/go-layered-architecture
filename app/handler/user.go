@@ -124,7 +124,11 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 
 	_, err := h.uc.UpdateUser(in)
 	if err != nil {
-		return response.ErrorInternal(c, err)
+		if errors.Is(err, usecase.ErrUserNotFound) {
+			return response.Error(c, response.ErrorCodeUserNotFound, http.StatusNotFound, err)
+		} else {
+			return response.ErrorInternal(c, err)
+		}
 	}
 
 	return response.NoContent(c)
@@ -139,7 +143,11 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 
 	_, err := h.uc.DeleteUser(in)
 	if err != nil {
-		return response.ErrorInternal(c, err)
+		if errors.Is(err, usecase.ErrUserNotFound) {
+			return response.Error(c, response.ErrorCodeUserNotFound, http.StatusNotFound, err)
+		} else {
+			return response.ErrorInternal(c, err)
+		}
 	}
 
 	return response.NoContent(c)
