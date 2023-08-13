@@ -175,6 +175,25 @@ func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, 
 }
 
 func (uc *groupUsecase) UpdateGroup(in *dto.UpdateGroupInput) (*dto.UpdateGroupOutput, error) {
+	g := model.NewGroup(model.GroupID(in.GroupID), in.Name, []model.UserID{})
+
+	isExisted, err := uc.gs.Exists(g.ID())
+	if err != nil {
+		return nil, err
+	}
+	if !isExisted {
+		return nil, ErrGroupNotFound
+	}
+
+	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
+		if err := tx.Group().Update(g); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
 	return nil, nil
 }
 

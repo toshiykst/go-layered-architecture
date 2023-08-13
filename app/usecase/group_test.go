@@ -11,7 +11,6 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
-	mockdomainservice "github.com/toshiykst/go-layerd-architecture/app/mock/domain/domainservice"
 	mockfactory "github.com/toshiykst/go-layerd-architecture/app/mock/domain/factory"
 	mockrepository "github.com/toshiykst/go-layerd-architecture/app/mock/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
@@ -475,6 +474,91 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 					t.Errorf(
 						"uc.GetGroups(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
 						in, got, tt.want, diff,
+					)
+				}
+			}
+		})
+	}
+}
+
+func TestGroupUsecase_UpdateGroup(t *testing.T) {
+	tests := []struct {
+		name              string
+		in                *dto.UpdateGroupInput
+		wantGroup         *model.Group
+		newMockRepository func() repository.Repository
+		wantErr           error
+	}{
+		{
+			name: "Update a group",
+			in: &dto.UpdateGroupInput{
+				GroupID: "TEST_GROUP_ID",
+				Name:    "TEST_GROUP_NAME_UPDATED",
+			},
+			wantGroup: model.NewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME_UPDATED",
+				[]model.UserID{},
+			),
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				s.AddGroups(model.NewGroup(
+					"TEST_GROUP_ID",
+					"TEST_GROUP_NAME_UPDATED",
+					[]model.UserID{},
+				))
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
+		{
+			name: "Returns error if the group does not exist",
+			in: &dto.UpdateGroupInput{
+				GroupID: "TEST_GROUP_ID",
+				Name:    "TEST_GROUP_NAME_UPDATED",
+			},
+			wantGroup: nil,
+			wantErr:   ErrGroupNotFound,
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			f := mockfactory.NewMockGroupFactory(ctrl)
+			r := tt.newMockRepository()
+			gs := domainservice.NewGroupService(r)
+			us := domainservice.NewUserService(r)
+			uc := NewGroupUsecase(r, f, gs, us)
+
+			_, err := uc.UpdateGroup(tt.in)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf(
+						"uc.UpdateGroup(%v)=_, %v; want _, %v",
+						tt.in, err, tt.wantErr,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no error, but has error %v", err)
+				}
+				gID := model.GroupID(tt.in.GroupID)
+				got, _ := r.Group().Find(gID)
+				if diff := cmp.Diff(got, tt.wantGroup, cmp.AllowUnexported(model.Group{})); diff != "" {
+					t.Errorf(
+						"r.Group().Find(%s)=%v, _; want %v, nil\ndiffers: (-got +want)\n%s",
+						gID, got, tt.wantGroup, diff,
 					)
 				}
 			}
