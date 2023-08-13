@@ -118,3 +118,34 @@ func (h *GroupHandler) GetGroups(c echo.Context) error {
 		Groups: gs,
 	})
 }
+
+type (
+	UpdateGroupRequest struct {
+		Name string `json:"name"`
+	}
+)
+
+func (h *GroupHandler) UpdateGroup(c echo.Context) error {
+	gID := c.Param("id")
+
+	req := &UpdateGroupRequest{}
+	if err := c.Bind(req); err != nil {
+		return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
+	}
+
+	in := &dto.UpdateGroupInput{
+		GroupID: gID,
+		Name:    req.Name,
+	}
+
+	_, err := h.uc.UpdateGroup(in)
+	if err != nil {
+		if errors.Is(err, usecase.ErrGroupNotFound) {
+			return response.Error(c, response.ErrorCodeGroupNotFound, http.StatusNotFound, err)
+		} else {
+			return response.ErrorInternal(c, err)
+		}
+	}
+
+	return response.NoContent(c)
+}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -634,6 +635,150 @@ func TestGroupHandler_GetGroups(t *testing.T) {
 					)
 				}
 			}
+
+			if tt.wantErrRes != nil {
+				var got *response.ErrorResponse
+				_ = json.Unmarshal(resBody, &got)
+				if diff := cmp.Diff(got, tt.wantErrRes); diff != "" {
+					t.Errorf(
+						"error response body: got = %v, want = %v\ndiffers: (-got +want)\n%s",
+						got, tt.wantErrRes, diff,
+					)
+				}
+			}
+		})
+	}
+}
+
+func TestGroupHandler_UpdateGroup(t *testing.T) {
+	tests := []struct {
+		name            string
+		gID             string
+		req             *UpdateGroupRequest
+		newGroupUsecase func(ctrl *gomock.Controller) usecase.GroupUsecase
+		wantStatus      int
+		wantErrRes      *response.ErrorResponse
+	}{
+		{
+			name: "Update a group",
+			gID:  "TEST_GROUP_ID",
+			req: &UpdateGroupRequest{
+				Name: "TEST_GROUP_NAME",
+			},
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					UpdateGroup(gomock.Any()).
+					DoAndReturn(func(in *dto.UpdateGroupInput) (*dto.UpdateGroupOutput, error) {
+						return &dto.UpdateGroupOutput{}, nil
+					})
+				return uc
+			},
+			wantStatus: http.StatusNoContent,
+			wantErrRes: nil,
+		},
+		{
+			name: "Returns internal server error response",
+			gID:  "TEST_GROUP_ID",
+			req: &UpdateGroupRequest{
+				Name: "TEST_GROUP_NAME",
+			},
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					UpdateGroup(gomock.Any()).
+					Return(nil, errors.New("an error occurred"))
+				return uc
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInternalServerError,
+				Status:  http.StatusInternalServerError,
+				Message: "an error occurred",
+			},
+		},
+		{
+			name: "Returns group not found error response",
+			gID:  "TEST_GROUP_ID",
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					UpdateGroup(gomock.Any()).
+					Return(nil, usecase.ErrGroupNotFound)
+				return uc
+			},
+			wantStatus: http.StatusNotFound,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeGroupNotFound,
+				Status:  http.StatusNotFound,
+				Message: usecase.ErrGroupNotFound.Error(),
+			},
+		},
+		{
+			name: "Returns internal server error response",
+			gID:  "TEST_GROUP_ID",
+			req: &UpdateGroupRequest{
+				Name: "TEST_GROUP_NAME",
+			},
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					UpdateGroup(gomock.Any()).
+					Return(nil, errors.New("an error occurred"))
+				return uc
+			},
+			wantStatus: http.StatusInternalServerError,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInternalServerError,
+				Status:  http.StatusInternalServerError,
+				Message: "an error occurred",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reqJson, _ := json.Marshal(tt.req)
+
+			req := httptest.NewRequest(
+				http.MethodPut,
+				fmt.Sprintf("https://example.com:8080/groups/%s", tt.gID),
+				bytes.NewBuffer(reqJson),
+			)
+			req.Header.Set("Content-Type", "application/json")
+
+			rec := httptest.NewRecorder()
+
+			e := echo.New()
+			c := e.NewContext(req, rec)
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			uc := tt.newGroupUsecase(ctrl)
+
+			h := NewGroupHandler(uc)
+
+			err := h.UpdateGroup(c)
+			if err != nil {
+				t.Fatalf("want no err, but has error: %v", err)
+			}
+
+			res := rec.Result()
+
+			wantStatusCode := tt.wantStatus
+			gotStatusCode := res.StatusCode
+			if gotStatusCode != wantStatusCode {
+				t.Errorf("statusCode got = %d, want = %d", gotStatusCode, wantStatusCode)
+			}
+
+			resBody, err := io.ReadAll(rec.Body)
+			if err != nil {
+				t.Fatalf("Failed to read body: %s", err.Error())
+			}
+			defer func(Body io.ReadCloser) {
+				if err := Body.Close(); err != nil {
+					t.Fatalf("Failed to close body: %s", err.Error())
+				}
+			}(res.Body)
 
 			if tt.wantErrRes != nil {
 				var got *response.ErrorResponse
