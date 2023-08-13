@@ -93,6 +93,14 @@ func (uc *userUsecase) GetUsers(_ *dto.GetUsersInput) (*dto.GetUsersOutput, erro
 func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
 	u := model.NewUser(model.UserID(in.UserID), in.Name, in.Email)
 
+	isExisted, err := uc.s.Exists(u.ID())
+	if err != nil {
+		return nil, err
+	}
+	if !isExisted {
+		return nil, ErrUserNotFound
+	}
+
 	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
 		if err := tx.User().Update(u); err != nil {
 			return err
@@ -107,6 +115,15 @@ func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutpu
 
 func (uc *userUsecase) DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error) {
 	uID := model.UserID(in.UserID)
+
+	isExisted, err := uc.s.Exists(uID)
+	if err != nil {
+		return nil, err
+	}
+	if !isExisted {
+		return nil, ErrUserNotFound
+	}
+
 	//　TODO: Remove the user from groups if it's in groups.
 	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
 		if err := tx.User().Delete(uID); err != nil {

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -10,7 +11,6 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
-	mockdomainservice "github.com/toshiykst/go-layerd-architecture/app/mock/domain/domainservice"
 	mockfactory "github.com/toshiykst/go-layerd-architecture/app/mock/domain/factory"
 	mockrepository "github.com/toshiykst/go-layerd-architecture/app/mock/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
@@ -57,11 +57,11 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			uc := NewUserUsecase(
-				tt.newMockRepository(),
-				tt.newMockFactory(ctrl),
-				mockdomainservice.NewMockUserService(ctrl),
-			)
+
+			r := tt.newMockRepository()
+			s := domainservice.NewUserService(r)
+			uc := NewUserUsecase(r, tt.newMockFactory(ctrl), s)
+
 			got, err := uc.CreateUser(tt.in)
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -123,13 +123,11 @@ func TestUserUsecase_GetUser(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
+
 			r := tt.newMockRepository()
-			us := domainservice.NewUserService(r)
-			uc := NewUserUsecase(
-				r,
-				mockfactory.NewMockUserFactory(ctrl),
-				us,
-			)
+			s := domainservice.NewUserService(r)
+			uc := NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), s)
+
 			got, err := uc.GetUser(tt.in)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -266,6 +264,21 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 				return r
 			},
 		},
+		{
+			name: "Returns error if the user does not exist",
+			in: &dto.UpdateUserInput{
+				UserID: "TEST_USER_ID",
+				Name:   "TEST_USER_NAME_UPDATED",
+				Email:  "TEST_USER_EMAIL_UPDATED",
+			},
+			wantUser: nil,
+			wantErr:  ErrUserNotFound,
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -275,23 +288,32 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 
 			f := mockfactory.NewMockUserFactory(ctrl)
 			r := tt.newMockRepository()
+			s := domainservice.NewUserService(r)
+			uc := NewUserUsecase(r, f, s)
 
-			uc := NewUserUsecase(
-				r, f,
-				mockdomainservice.NewMockUserService(ctrl),
-			)
 			_, err := uc.UpdateUser(tt.in)
-			if err != nil {
-				t.Fatalf("want no err, but has error %v", err)
-			}
-
-			uID := model.UserID(tt.in.UserID)
-			got, _ := r.User().Find(uID)
-			if diff := cmp.Diff(got, tt.wantUser, cmp.AllowUnexported(model.User{})); diff != "" {
-				t.Errorf(
-					"r.User().Find(%s)=%v, _; want %v, nil\ndiffers: (-got +want)\n%s",
-					uID, got, tt.wantUser, diff,
-				)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf(
+						"uc.UpdateUser(%v)=_, %v; want _, %v",
+						tt.in, err, tt.wantErr,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no err, but has error %v", err)
+				}
+				uID := model.UserID(tt.in.UserID)
+				got, _ := r.User().Find(uID)
+				if diff := cmp.Diff(got, tt.wantUser, cmp.AllowUnexported(model.User{})); diff != "" {
+					t.Errorf(
+						"r.User().Find(%s)=%v, _; want %v, nil\ndiffers: (-got +want)\n%s",
+						uID, got, tt.wantUser, diff,
+					)
+				}
 			}
 		})
 	}
@@ -316,6 +338,18 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 				return r
 			},
 		},
+		{
+			name: "Returns error if the user does not exist",
+			in: &dto.DeleteUserInput{
+				UserID: "TEST_USER_ID",
+			},
+			wantErr: ErrUserNotFound,
+			newMockRepository: func() repository.Repository {
+				s := mockrepository.NewStore()
+				r := mockrepository.NewMockRepository(s)
+				return r
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -325,20 +359,31 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 
 			f := mockfactory.NewMockUserFactory(ctrl)
 			r := tt.newMockRepository()
+			s := domainservice.NewUserService(r)
 
-			uc := NewUserUsecase(
-				r, f,
-				mockdomainservice.NewMockUserService(ctrl),
-			)
+			uc := NewUserUsecase(r, f, s)
 			_, err := uc.DeleteUser(tt.in)
-			if err != nil {
-				t.Fatalf("want no err, but has error %v", err)
-			}
 
-			uID := model.UserID(tt.in.UserID)
-			got, _ := r.User().Find(uID)
-			if got != nil {
-				t.Errorf("r.User().Find(%s)=%v, _; want nil", uID, got)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf(
+						"uc.DeleteUser(%v)=_, %v; want _, %v",
+						tt.in, err, tt.wantErr,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no err, but has error %v", err)
+				}
+
+				uID := model.UserID(tt.in.UserID)
+				got, _ := r.User().Find(uID)
+				if got != nil {
+					t.Errorf("r.User().Find(%s)=%v, _; want nil", uID, got)
+				}
 			}
 		})
 	}
