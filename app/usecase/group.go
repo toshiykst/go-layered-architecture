@@ -22,15 +22,17 @@ type GroupUsecase interface {
 type groupUsecase struct {
 	r  repository.Repository
 	f  factory.GroupFactory
+	gs domainservice.GroupService
 	us domainservice.UserService
 }
 
 func NewGroupUsecase(
 	r repository.Repository,
 	f factory.GroupFactory,
+	gs domainservice.GroupService,
 	us domainservice.UserService,
 ) GroupUsecase {
-	return &groupUsecase{r: r, f: f, us: us}
+	return &groupUsecase{r: r, f: f, gs: gs, us: us}
 }
 
 func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupOutput, error) {

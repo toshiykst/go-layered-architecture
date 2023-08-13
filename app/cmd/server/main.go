@@ -39,7 +39,6 @@ func main() {
 	uf := factory.NewUserFactory()
 	us := domainservice.NewUserService(db)
 	uuc := usecase.NewUserUsecase(db, uf, us)
-
 	uh := handler.NewUserHandler(uuc)
 
 	e.POST("/users", uh.CreateUser)
@@ -49,7 +48,8 @@ func main() {
 	e.DELETE("/users/:id", uh.DeleteUser)
 
 	gf := factory.NewGroupFactory()
-	guc := usecase.NewGroupUsecase(db, gf, us)
+	gs := domainservice.NewGroupService(db)
+	guc := usecase.NewGroupUsecase(db, gf, gs, us)
 	gh := handler.NewGroupHandler(guc)
 
 	e.POST("/groups", gh.CreateGroup)

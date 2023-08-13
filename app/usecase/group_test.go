@@ -146,12 +146,12 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
+
 			r := tt.newMockRepository()
-			uc := NewGroupUsecase(
-				tt.newMockRepository(),
-				tt.newMockFactory(ctrl),
-				domainservice.NewUserService(r),
-			)
+			gs := domainservice.NewGroupService(r)
+			us := domainservice.NewUserService(r)
+			uc := NewGroupUsecase(r, tt.newMockFactory(ctrl), gs, us)
+
 			got, err := uc.CreateGroup(tt.in)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -254,8 +254,12 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
+
 			r := tt.newMockRepository()
-			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), mockdomainservice.NewMockUserService(ctrl))
+			gs := domainservice.NewGroupService(r)
+			us := domainservice.NewUserService(r)
+			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), gs, us)
+
 			got, err := uc.GetGroup(tt.in)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -445,8 +449,12 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
+
 			r := tt.newMockRepository()
-			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), mockdomainservice.NewMockUserService(ctrl))
+			gs := domainservice.NewGroupService(r)
+			us := domainservice.NewUserService(r)
+			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), gs, us)
+
 			in := &dto.GetGroupsInput{}
 			got, err := uc.GetGroups(in)
 			if tt.wantErr != nil {
