@@ -547,3 +547,64 @@ func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestDatabase_dbGroupRepository_Delete(t *testing.T) {
+	tests := []struct {
+		name    string
+		gID     model.GroupID
+		wantErr error
+	}{
+		{
+			name:    "Delete a group",
+			gID:     model.GroupID("TEST_GROUP_ID"),
+			wantErr: nil,
+		},
+		{
+			name:    "Error",
+			gID:     model.GroupID("TEST_GROUP_ID"),
+			wantErr: errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			expectExec := mock.
+				ExpectExec(regexp.QuoteMeta("DELETE FROM `groups` WHERE `groups`.`id` = ?")).
+				WithArgs(tt.gID)
+
+			if tt.wantErr != nil {
+				expectExec.WillReturnError(tt.wantErr)
+			} else {
+				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			r := &dbGroupRepository{db: db}
+
+			err = r.Delete(tt.gID)
+
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf("r.Delete(%s)=%v; want %v", tt.gID, err, tt.wantErr)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no error, but has error %v", err)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}

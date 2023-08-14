@@ -75,7 +75,9 @@ func (r *dbGroupRepository) Update(g *model.Group) error {
 }
 
 func (r *dbGroupRepository) Delete(gID model.GroupID) error {
-	return nil
+	return r.db.Delete(&datamodel.Group{
+		ID: string(gID),
+	}).Error
 }
 
 func (r *dbGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {

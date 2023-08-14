@@ -43,7 +43,14 @@ func (r *memoryGroupRepository) Update(g *model.Group) error {
 	return nil
 }
 
-func (r *memoryGroupRepository) Delete(id model.GroupID) error {
+func (r *memoryGroupRepository) Delete(gID model.GroupID) error {
+	var result model.Groups
+	for _, g := range r.s.groups {
+		if g.ID() != gID {
+			result = append(result, g)
+		}
+	}
+	r.s.groups = result
 	return nil
 }
 
