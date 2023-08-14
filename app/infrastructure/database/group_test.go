@@ -484,6 +484,28 @@ func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 			wantErr: nil,
 		},
 		{
+			name: "Returns error if the group id is empty",
+			args: args{
+				gID: "",
+				uIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			dbErr:   nil,
+			wantErr: errors.New("group id must not be empty"),
+		},
+		{
+			name: "Returns error if user ids are empty",
+			args: args{
+				gID:  "TEST_GROUP_ID",
+				uIDs: []model.UserID{},
+			},
+			dbErr:   nil,
+			wantErr: errors.New("user ids must not be empty"),
+		},
+		{
 			name: "DB group error",
 			args: args{
 				gID: "TEST_GROUP_ID",

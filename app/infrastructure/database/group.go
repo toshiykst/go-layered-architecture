@@ -81,7 +81,15 @@ func (r *dbGroupRepository) Delete(gID model.GroupID) error {
 }
 
 func (r *dbGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {
+	if gID == "" {
+		return errors.New("group id must not be empty")
+	}
+	if len(uIDs) == 0 {
+		return errors.New("user ids must not be empty")
+	}
 	dmgus := datamodel.NewGroupUsers(gID, uIDs)
+	return r.db.Create(dmgus).Error
+}
 
 	if err := r.db.Create(dmgus).Error; err != nil {
 		return err
