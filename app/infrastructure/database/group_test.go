@@ -529,23 +529,25 @@ func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 			}
 			defer sqlDB.Close()
 
-			var (
-				sqlArgs      []any
-				placeHolders []string
-			)
-			for _, uID := range tt.args.uIDs {
-				placeHolders = append(placeHolders, "(?,?)")
-				sqlArgs = append(sqlArgs, tt.args.gID, uID)
-			}
+			if tt.wantErr == nil || tt.dbErr != nil {
+				var (
+					sqlArgs      []any
+					placeHolders []string
+				)
+				for _, uID := range tt.args.uIDs {
+					placeHolders = append(placeHolders, "(?,?)")
+					sqlArgs = append(sqlArgs, tt.args.gID, uID)
+				}
 
-			expectExec := mock.
-				ExpectExec(regexp.QuoteMeta("INSERT INTO `group_users` (`group_id`,`user_id`) VALUES " + strings.Join(placeHolders, ","))).
-				WithArgs(testutil.ToDriverValues(t, sqlArgs...)...)
+				expectExec := mock.
+					ExpectExec(regexp.QuoteMeta("INSERT INTO `group_users` (`group_id`,`user_id`) VALUES " + strings.Join(placeHolders, ","))).
+					WithArgs(testutil.ToDriverValues(t, sqlArgs...)...)
 
-			if tt.wantErr != nil {
-				expectExec.WillReturnError(tt.wantErr)
-			} else {
-				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+				if tt.dbErr != nil {
+					expectExec.WillReturnError(tt.dbErr)
+				} else {
+					expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+				}
 			}
 
 			r := &dbGroupRepository{db: db}
@@ -554,12 +556,12 @@ func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 				if err == nil {
 					t.Error("want an error, but has no error")
 				}
-				if !errors.Is(err, tt.wantErr) {
+				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("r.AddUsers(%s, %v)=%v; want %v", tt.args.gID, tt.args.uIDs, err, tt.wantErr)
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no err, but has error %v", err)
+					t.Fatalf("want no error, but has error %v", err)
 				}
 			}
 
