@@ -1,4 +1,4 @@
-package mockrepository
+package memory
 
 import (
 	"errors"
@@ -6,11 +6,11 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 )
 
-type mockGroupRepository struct {
+type memoryGroupRepository struct {
 	s *store
 }
 
-func (r *mockGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
+func (r *memoryGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
 	for _, g := range r.s.groups {
 		if g.ID() == gID {
 			return g, nil
@@ -19,16 +19,16 @@ func (r *mockGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
 	return nil, nil
 }
 
-func (r *mockGroupRepository) List() (model.Groups, error) {
+func (r *memoryGroupRepository) List() (model.Groups, error) {
 	return r.s.groups, nil
 }
 
-func (r *mockGroupRepository) Create(g *model.Group) (*model.Group, error) {
+func (r *memoryGroupRepository) Create(g *model.Group) (*model.Group, error) {
 	r.s.AddGroups(g)
 	return g, nil
 }
 
-func (r *mockGroupRepository) Update(g *model.Group) error {
+func (r *memoryGroupRepository) Update(g *model.Group) error {
 	if g.ID() == "" {
 		return errors.New("group id must not be empty")
 	}
@@ -43,11 +43,11 @@ func (r *mockGroupRepository) Update(g *model.Group) error {
 	return nil
 }
 
-func (r *mockGroupRepository) Delete(id model.GroupID) error {
+func (r *memoryGroupRepository) Delete(id model.GroupID) error {
 	return nil
 }
 
-func (r *mockGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {
+func (r *memoryGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {
 	for i, g := range r.s.groups {
 		if g.ID() == gID {
 			r.s.groups[i] = model.NewGroup(gID, g.Name(), uIDs)
@@ -58,6 +58,6 @@ func (r *mockGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) e
 	return nil
 }
 
-func (r *mockGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) error {
+func (r *memoryGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) error {
 	return nil
 }

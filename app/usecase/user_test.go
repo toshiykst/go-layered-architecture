@@ -11,19 +11,19 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
+	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/memory"
 	mockfactory "github.com/toshiykst/go-layerd-architecture/app/mock/domain/factory"
-	mockrepository "github.com/toshiykst/go-layerd-architecture/app/mock/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
 func TestUserUsecase_CreateUser(t *testing.T) {
 	tests := []struct {
-		name              string
-		in                *dto.CreateUserInput
-		want              *dto.CreateUserOutput
-		newMockRepository func() repository.Repository
-		newMockFactory    func(ctrl *gomock.Controller) factory.UserFactory
-		wantErr           error
+		name                string
+		in                  *dto.CreateUserInput
+		want                *dto.CreateUserOutput
+		newMemoryRepository func() repository.Repository
+		newMockFactory      func(ctrl *gomock.Controller) factory.UserFactory
+		wantErr             error
 	}{
 		{
 			name: "Creates a new user",
@@ -38,9 +38,9 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 					Email:  "TEST_USER_EMAIL",
 				},
 			},
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
-				r := mockrepository.NewMockRepository(s)
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 			newMockFactory: func(ctrl *gomock.Controller) factory.UserFactory {
@@ -58,7 +58,7 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			s := domainservice.NewUserService(r)
 			uc := NewUserUsecase(r, tt.newMockFactory(ctrl), s)
 
@@ -78,11 +78,11 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 
 func TestUserUsecase_GetUser(t *testing.T) {
 	tests := []struct {
-		name              string
-		in                *dto.GetUserInput
-		want              *dto.GetUserOutput
-		wantErr           error
-		newMockRepository func() repository.Repository
+		name                string
+		in                  *dto.GetUserInput
+		want                *dto.GetUserOutput
+		wantErr             error
+		newMemoryRepository func() repository.Repository
 	}{
 		{
 			name: "Returns a user",
@@ -97,10 +97,10 @@ func TestUserUsecase_GetUser(t *testing.T) {
 				},
 			},
 			wantErr: nil,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -111,9 +111,9 @@ func TestUserUsecase_GetUser(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: ErrUserNotFound,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
-				r := mockrepository.NewMockRepository(s)
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -124,7 +124,7 @@ func TestUserUsecase_GetUser(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			s := domainservice.NewUserService(r)
 			uc := NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), s)
 
@@ -157,11 +157,11 @@ func TestUserUsecase_GetUser(t *testing.T) {
 
 func TestUserUsecase_GetUsers(t *testing.T) {
 	tests := []struct {
-		name              string
-		in                *dto.GetUsersInput
-		want              *dto.GetUsersOutput
-		wantErr           error
-		newMockRepository func() repository.Repository
+		name                string
+		in                  *dto.GetUsersInput
+		want                *dto.GetUsersOutput
+		wantErr             error
+		newMemoryRepository func() repository.Repository
 	}{
 		{
 			name: "Returns users",
@@ -186,14 +186,14 @@ func TestUserUsecase_GetUsers(t *testing.T) {
 				},
 			},
 			wantErr: nil,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddUsers(
 					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
 					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
 					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -203,7 +203,7 @@ func TestUserUsecase_GetUsers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			us := domainservice.NewUserService(r)
 			uc := NewUserUsecase(
 				r,
@@ -239,11 +239,11 @@ func TestUserUsecase_GetUsers(t *testing.T) {
 
 func TestUserUsecase_UpdateUser(t *testing.T) {
 	tests := []struct {
-		name              string
-		in                *dto.UpdateUserInput
-		wantUser          *model.User
-		newMockRepository func() repository.Repository
-		wantErr           error
+		name                string
+		in                  *dto.UpdateUserInput
+		wantUser            *model.User
+		newMemoryRepository func() repository.Repository
+		wantErr             error
 	}{
 		{
 			name: "Update a user",
@@ -257,10 +257,10 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 				"TEST_USER_NAME_UPDATED",
 				"TEST_USER_EMAIL_UPDATED",
 			),
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -273,9 +273,9 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 			},
 			wantUser: nil,
 			wantErr:  ErrUserNotFound,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
-				r := mockrepository.NewMockRepository(s)
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -287,7 +287,7 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			f := mockfactory.NewMockUserFactory(ctrl)
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			s := domainservice.NewUserService(r)
 			uc := NewUserUsecase(r, f, s)
 
@@ -321,20 +321,20 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 
 func TestUserUsecase_DeleteUser(t *testing.T) {
 	tests := []struct {
-		name              string
-		in                *dto.DeleteUserInput
-		newMockRepository func() repository.Repository
-		wantErr           error
+		name                string
+		in                  *dto.DeleteUserInput
+		newMemoryRepository func() repository.Repository
+		wantErr             error
 	}{
 		{
 			name: "Delete a user",
 			in: &dto.DeleteUserInput{
 				UserID: "TEST_USER_ID",
 			},
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -344,9 +344,9 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 				UserID: "TEST_USER_ID",
 			},
 			wantErr: ErrUserNotFound,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
-				r := mockrepository.NewMockRepository(s)
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -358,7 +358,7 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			f := mockfactory.NewMockUserFactory(ctrl)
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			s := domainservice.NewUserService(r)
 
 			uc := NewUserUsecase(r, f, s)

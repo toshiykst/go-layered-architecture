@@ -11,19 +11,19 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
+	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/memory"
 	mockfactory "github.com/toshiykst/go-layerd-architecture/app/mock/domain/factory"
-	mockrepository "github.com/toshiykst/go-layerd-architecture/app/mock/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
 func TestGroupUsecase_CreateGroup(t *testing.T) {
 	tests := []struct {
-		name              string
-		in                *dto.CreateGroupInput
-		want              *dto.CreateGroupOutput
-		wantErr           error
-		newMockRepository func() repository.Repository
-		newMockFactory    func(ctrl *gomock.Controller) factory.GroupFactory
+		name                string
+		in                  *dto.CreateGroupInput
+		want                *dto.CreateGroupOutput
+		wantErr             error
+		newMemoryRepository func() repository.Repository
+		newMockFactory      func(ctrl *gomock.Controller) factory.GroupFactory
 	}{
 		{
 			name: "Creates a new group with no users",
@@ -39,14 +39,14 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				},
 			},
 			wantErr: nil,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddUsers(
 					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
 					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
 					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 			newMockFactory: func(ctrl *gomock.Controller) factory.GroupFactory {
@@ -91,14 +91,14 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				},
 			},
 			wantErr: nil,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddUsers(
 					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
 					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
 					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 			newMockFactory: func(ctrl *gomock.Controller) factory.GroupFactory {
@@ -121,14 +121,14 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: ErrInvalidUserIDs,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddUsers(
 					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
 					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
 					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 			newMockFactory: func(ctrl *gomock.Controller) factory.GroupFactory {
@@ -146,7 +146,7 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
 			uc := NewGroupUsecase(r, tt.newMockFactory(ctrl), gs, us)
@@ -179,11 +179,11 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 
 func TestGroupUsecase_GetGroup(t *testing.T) {
 	tests := []struct {
-		name              string
-		in                *dto.GetGroupInput
-		want              *dto.GetGroupOutput
-		wantErr           error
-		newMockRepository func() repository.Repository
+		name                string
+		in                  *dto.GetGroupInput
+		want                *dto.GetGroupOutput
+		wantErr             error
+		newMemoryRepository func() repository.Repository
 	}{
 		{
 			name: "Returns a group",
@@ -214,8 +214,8 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 				},
 			},
 			wantErr: nil,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddGroups(model.NewGroup(
 					"TEST_GROUP_ID",
 					"TEST_GROUP_NAME",
@@ -230,7 +230,7 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
 					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -241,9 +241,9 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 			},
 			want:    nil,
 			wantErr: ErrGroupNotFound,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
-				r := mockrepository.NewMockRepository(s)
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -254,7 +254,7 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
 			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), gs, us)
@@ -288,10 +288,10 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 
 func TestGroupUsecase_GetGroups(t *testing.T) {
 	tests := []struct {
-		name              string
-		want              *dto.GetGroupsOutput
-		wantErr           error
-		newMockRepository func() repository.Repository
+		name                string
+		want                *dto.GetGroupsOutput
+		wantErr             error
+		newMemoryRepository func() repository.Repository
 	}{
 		{
 			name: "Returns groups",
@@ -348,8 +348,8 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 				},
 			},
 			wantErr: nil,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddGroups(
 					model.NewGroup(
 						"TEST_GROUP_ID_1",
@@ -381,7 +381,7 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
 					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -391,9 +391,9 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 				Groups: []dto.Group{},
 			},
 			wantErr: nil,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
-				r := mockrepository.NewMockRepository(s)
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -419,8 +419,8 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 				},
 			},
 			wantErr: nil,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddGroups(
 					model.NewGroup(
 						"TEST_GROUP_ID_1",
@@ -438,7 +438,7 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 						[]model.UserID{},
 					),
 				)
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -449,7 +449,7 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
 			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), gs, us)
@@ -483,11 +483,11 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 
 func TestGroupUsecase_UpdateGroup(t *testing.T) {
 	tests := []struct {
-		name              string
-		in                *dto.UpdateGroupInput
-		wantGroup         *model.Group
-		newMockRepository func() repository.Repository
-		wantErr           error
+		name                string
+		in                  *dto.UpdateGroupInput
+		wantGroup           *model.Group
+		newMemoryRepository func() repository.Repository
+		wantErr             error
 	}{
 		{
 			name: "Update a group",
@@ -500,14 +500,14 @@ func TestGroupUsecase_UpdateGroup(t *testing.T) {
 				"TEST_GROUP_NAME_UPDATED",
 				[]model.UserID{},
 			),
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				s.AddGroups(model.NewGroup(
 					"TEST_GROUP_ID",
 					"TEST_GROUP_NAME_UPDATED",
 					[]model.UserID{},
 				))
-				r := mockrepository.NewMockRepository(s)
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -519,9 +519,9 @@ func TestGroupUsecase_UpdateGroup(t *testing.T) {
 			},
 			wantGroup: nil,
 			wantErr:   ErrGroupNotFound,
-			newMockRepository: func() repository.Repository {
-				s := mockrepository.NewStore()
-				r := mockrepository.NewMockRepository(s)
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
 				return r
 			},
 		},
@@ -533,7 +533,7 @@ func TestGroupUsecase_UpdateGroup(t *testing.T) {
 			defer ctrl.Finish()
 
 			f := mockfactory.NewMockGroupFactory(ctrl)
-			r := tt.newMockRepository()
+			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
 			uc := NewGroupUsecase(r, f, gs, us)

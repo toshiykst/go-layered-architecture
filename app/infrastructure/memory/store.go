@@ -1,4 +1,4 @@
-package mockrepository
+package memory
 
 import "github.com/toshiykst/go-layerd-architecture/app/domain/model"
 
