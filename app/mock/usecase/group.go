@@ -7,8 +7,8 @@ package mockusecase
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	dto "github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockGroupUsecase is a mock of GroupUsecase interface.

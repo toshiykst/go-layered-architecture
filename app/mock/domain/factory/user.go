@@ -7,8 +7,8 @@ package mockfactory
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	model "github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockUserFactory is a mock of UserFactory interface.

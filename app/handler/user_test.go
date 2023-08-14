@@ -10,10 +10,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/labstack/echo"
+	"go.uber.org/mock/gomock"
 
 	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 	mockusecase "github.com/toshiykst/go-layerd-architecture/app/mock/usecase"

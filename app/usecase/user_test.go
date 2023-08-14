@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/google/go-cmp/cmp"
+	"go.uber.org/mock/gomock"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
