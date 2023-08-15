@@ -57,7 +57,7 @@ func (r *memoryGroupRepository) Delete(gID model.GroupID) error {
 func (r *memoryGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {
 	for i, g := range r.s.groups {
 		if g.ID() == gID {
-			r.s.groups[i] = model.NewGroup(gID, g.Name(), uIDs)
+			r.s.groups[i] = model.NewGroup(gID, g.Name(), append(g.UserIDs(), uIDs...))
 			return nil
 		}
 	}
