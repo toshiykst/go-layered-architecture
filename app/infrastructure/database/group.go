@@ -91,13 +91,17 @@ func (r *dbGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) err
 	return r.db.Create(dmgus).Error
 }
 
-	if err := r.db.Create(dmgus).Error; err != nil {
-		return err
+func (r *dbGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) error {
+	if gID == "" {
+		return errors.New("group id must not be empty")
+	}
+	if len(uIDs) == 0 {
+		return errors.New("user ids must not be empty")
 	}
 
-	return nil
-}
-
-func (r *dbGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) error {
-	return nil
+	return r.db.
+		Where("group_id = ?", gID).
+		Where("user_id IN (?)", uIDs).
+		Delete(&datamodel.Group{}).
+		Error
 }

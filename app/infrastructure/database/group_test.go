@@ -458,6 +458,67 @@ func TestDatabase_dbGroupRepository_Update(t *testing.T) {
 	}
 }
 
+func TestDatabase_dbGroupRepository_Delete(t *testing.T) {
+	tests := []struct {
+		name    string
+		gID     model.GroupID
+		wantErr error
+	}{
+		{
+			name:    "Delete a group",
+			gID:     model.GroupID("TEST_GROUP_ID"),
+			wantErr: nil,
+		},
+		{
+			name:    "Error",
+			gID:     model.GroupID("TEST_GROUP_ID"),
+			wantErr: errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			expectExec := mock.
+				ExpectExec(regexp.QuoteMeta("DELETE FROM `groups` WHERE `groups`.`id` = ?")).
+				WithArgs(tt.gID)
+
+			if tt.wantErr != nil {
+				expectExec.WillReturnError(tt.wantErr)
+			} else {
+				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+			}
+
+			r := &dbGroupRepository{db: db}
+
+			err = r.Delete(tt.gID)
+
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf("r.Delete(%s)=%v; want %v", tt.gID, err, tt.wantErr)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no error, but has error %v", err)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
 func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 	type args struct {
 		gID  model.GroupID
@@ -572,20 +633,64 @@ func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 	}
 }
 
-func TestDatabase_dbGroupRepository_Delete(t *testing.T) {
+func TestDatabase_dbGroupRepository_RemoveUsers(t *testing.T) {
+	type args struct {
+		gID  model.GroupID
+		uIDs []model.UserID
+	}
+
 	tests := []struct {
 		name    string
-		gID     model.GroupID
+		args    args
+		dbErr   error
 		wantErr error
 	}{
 		{
-			name:    "Delete a group",
-			gID:     model.GroupID("TEST_GROUP_ID"),
+			name: "Delete group users",
+			args: args{
+				gID: "TEST_GROUP_ID",
+				uIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			dbErr:   nil,
 			wantErr: nil,
 		},
 		{
-			name:    "Error",
-			gID:     model.GroupID("TEST_GROUP_ID"),
+			name: "Returns error if the group id is empty",
+			args: args{
+				gID: "",
+				uIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			dbErr:   nil,
+			wantErr: errors.New("group id must not be empty"),
+		},
+		{
+			name: "Returns error if user ids are empty",
+			args: args{
+				gID:  "TEST_GROUP_ID",
+				uIDs: []model.UserID{},
+			},
+			dbErr:   nil,
+			wantErr: errors.New("user ids must not be empty"),
+		},
+		{
+			name: "DB error",
+			args: args{
+				gID: "TEST_GROUP_ID",
+				uIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			dbErr:   errors.New("an error occurred"),
 			wantErr: errors.New("an error occurred"),
 		},
 	}
@@ -599,30 +704,30 @@ func TestDatabase_dbGroupRepository_Delete(t *testing.T) {
 			}
 			defer sqlDB.Close()
 
-			expectExec := mock.
-				ExpectExec(regexp.QuoteMeta("DELETE FROM `groups` WHERE `groups`.`id` = ?")).
-				WithArgs(tt.gID)
+			if tt.wantErr == nil || tt.dbErr != nil {
+				expectExec := mock.
+					ExpectExec(regexp.QuoteMeta("DELETE FROM `groups` WHERE group_id = ? AND user_id IN (?,?,?)")).
+					WithArgs(tt.args.gID, tt.args.uIDs[0], tt.args.uIDs[1], tt.args.uIDs[2])
 
-			if tt.wantErr != nil {
-				expectExec.WillReturnError(tt.wantErr)
-			} else {
-				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+				if tt.wantErr != nil {
+					expectExec.WillReturnError(tt.wantErr)
+				} else {
+					expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+				}
 			}
 
 			r := &dbGroupRepository{db: db}
-
-			err = r.Delete(tt.gID)
-
+			err = r.RemoveUsers(tt.args.gID, tt.args.uIDs)
 			if tt.wantErr != nil {
 				if err == nil {
-					t.Error("want an error, but has no error")
+					t.Fatal("want an error, but has no error")
 				}
-				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("r.Delete(%s)=%v; want %v", tt.gID, err, tt.wantErr)
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("r.RemoveUsers(%s, %v)=%v; want %v", tt.args.gID, tt.args.uIDs, err, tt.wantErr)
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no error, but has error %v", err)
+					t.Fatalf("want no err, but has error %v", err)
 				}
 			}
 

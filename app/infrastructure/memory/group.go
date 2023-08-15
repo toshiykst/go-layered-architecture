@@ -66,5 +66,19 @@ func (r *memoryGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID)
 }
 
 func (r *memoryGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) error {
+	for i, g := range r.s.groups {
+		if g.ID() == gID {
+			var removed []model.UserID
+			for _, guID := range r.s.groups[i].UserIDs() {
+				for _, uID := range uIDs {
+					if guID != uID {
+						removed = append(removed, guID)
+					}
+				}
+			}
+			r.s.groups[i] = model.NewGroup(gID, g.Name(), removed)
+			return nil
+		}
+	}
 	return nil
 }
