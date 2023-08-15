@@ -565,3 +565,96 @@ func TestGroupUsecase_UpdateGroup(t *testing.T) {
 		})
 	}
 }
+
+func TestGroupUsecase_DeleteGroup(t *testing.T) {
+	tests := []struct {
+		name                string
+		in                  *dto.DeleteGroupInput
+		newMemoryRepository func() repository.Repository
+		wantErr             error
+	}{
+		{
+			name: "Delete a group",
+			in: &dto.DeleteGroupInput{
+				GroupID: "TEST_GROUP_ID",
+			},
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				s.AddGroups(model.NewGroup(
+					"TEST_GROUP_ID",
+					"TEST_GROUP_NAME",
+					[]model.UserID{},
+				))
+				r := memory.NewMemoryRepository(s)
+				return r
+			},
+		},
+		{
+			name: "Delete a group that has users",
+			in: &dto.DeleteGroupInput{
+				GroupID: "TEST_GROUP_ID",
+			},
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				s.AddGroups(model.NewGroup(
+					"TEST_GROUP_ID",
+					"TEST_GROUP_NAME",
+					[]model.UserID{
+						"TEST_USER_ID_1",
+						"TEST_USER_ID_2",
+						"TEST_USER_ID_3",
+					},
+				))
+				r := memory.NewMemoryRepository(s)
+				return r
+			},
+		},
+		{
+			name: "Returns error if the group does not exist",
+			in: &dto.DeleteGroupInput{
+				GroupID: "TEST_GROUP_ID",
+			},
+			wantErr: ErrGroupNotFound,
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
+				return r
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			f := mockfactory.NewMockGroupFactory(ctrl)
+			r := tt.newMemoryRepository()
+			gs := domainservice.NewGroupService(r)
+			us := domainservice.NewUserService(r)
+			uc := NewGroupUsecase(r, f, gs, us)
+
+			_, err := uc.DeleteGroup(tt.in)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatal("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf(
+						"uc.DeleteGroup(%v)=_, %v; want _, %v",
+						tt.in, err, tt.wantErr,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no error, but has error %v", err)
+				}
+				gID := model.GroupID(tt.in.GroupID)
+				got, _ := r.Group().Find(gID)
+				if got != nil {
+					t.Errorf("r.Group().Find(%s)=%v, _; want nil, nil", gID, got)
+				}
+			}
+		})
+	}
+}

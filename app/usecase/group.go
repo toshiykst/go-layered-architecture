@@ -198,5 +198,29 @@ func (uc *groupUsecase) UpdateGroup(in *dto.UpdateGroupInput) (*dto.UpdateGroupO
 }
 
 func (uc *groupUsecase) DeleteGroup(in *dto.DeleteGroupInput) (*dto.DeleteGroupOutput, error) {
-	return nil, nil
+	gID := model.GroupID(in.GroupID)
+
+	g, err := uc.r.Group().Find(gID)
+	if err != nil {
+		return nil, err
+	}
+	if g == nil {
+		return nil, ErrGroupNotFound
+	}
+
+	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
+		if len(g.UserIDs()) > 0 {
+			if err = tx.Group().RemoveUsers(g.ID(), g.UserIDs()); err != nil {
+				return err
+			}
+		}
+		if err := tx.Group().Delete(gID); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return &dto.DeleteGroupOutput{}, nil
 }
