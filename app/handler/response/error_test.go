@@ -29,7 +29,7 @@ func TestError(t *testing.T) {
 				status: http.StatusBadRequest,
 				err:    errors.New("an error occurred"),
 			},
-			wantBody: `{"code":"INVALID_INVALID_ARGUMENTS","status":400,"message":"an error occurred"}
+			wantBody: `{"code":"INVALID_ARGUMENTS","status":400,"message":"an error occurred"}
 `,
 		},
 	}
