@@ -149,3 +149,22 @@ func (h *GroupHandler) UpdateGroup(c echo.Context) error {
 
 	return response.NoContent(c)
 }
+
+func (h *GroupHandler) DeleteGroup(c echo.Context) error {
+	gID := c.Param("id")
+
+	in := &dto.DeleteGroupInput{
+		GroupID: gID,
+	}
+
+	_, err := h.uc.DeleteGroup(in)
+	if err != nil {
+		if errors.Is(err, usecase.ErrGroupNotFound) {
+			return response.Error(c, response.ErrorCodeGroupNotFound, http.StatusNotFound, err)
+		} else {
+			return response.ErrorInternal(c, err)
+		}
+	}
+
+	return response.NoContent(c)
+}

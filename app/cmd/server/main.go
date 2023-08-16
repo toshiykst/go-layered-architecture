@@ -56,6 +56,7 @@ func main() {
 	e.GET("/groups/:id", gh.GetGroup)
 	e.GET("/groups", gh.GetGroups)
 	e.PUT("/groups/:id", gh.UpdateGroup)
+	e.DELETE("/groups/:id", gh.DeleteGroup)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
