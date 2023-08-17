@@ -93,6 +93,53 @@ func TestNewGroupUsers(t *testing.T) {
 	}
 }
 
+func TestGroupUsers_GroupIDs(t *testing.T) {
+	tests := []struct {
+		name string
+		gus  GroupUsers
+		want []string
+	}{
+		{
+			name: "Returns unique group ids",
+			gus: GroupUsers{
+				{
+					GroupID: "TEST_GROUP_ID_1",
+					UserID:  "TEST_USER_ID_1",
+				},
+				{
+					GroupID: "TEST_GROUP_ID_1",
+					UserID:  "TEST_USER_ID_2",
+				},
+				{
+					GroupID: "TEST_GROUP_ID_2",
+					UserID:  "TEST_USER_ID_3",
+				},
+			},
+			want: []string{
+				"TEST_GROUP_ID_1",
+				"TEST_GROUP_ID_2",
+			},
+		},
+		{
+			name: "Returns nil when group users is nil",
+			gus:  nil,
+			want: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.gus.GroupIDs()
+			if diff := cmp.Diff(got, tt.want); diff != "" {
+				t.Errorf(
+					"gus.GroupIDs()=%v; want %v, receiver=%v\ndiffers: (-got +want)\n%s",
+					got, tt.want, tt.gus, diff,
+				)
+			}
+		})
+	}
+}
+
 func TestGroupUsers_ModelUserIDs(t *testing.T) {
 	tests := []struct {
 		name string

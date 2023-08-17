@@ -24,6 +24,22 @@ func NewGroupUsers(gID model.GroupID, uIDs []model.UserID) GroupUsers {
 	return gus
 }
 
+func (gus GroupUsers) GroupIDs() []string {
+	if gus == nil {
+		return nil
+	}
+	m := make(map[string]struct{})
+	var gIDs []string
+	for _, gu := range gus {
+		gID := gu.GroupID
+		if _, ok := m[gID]; !ok {
+			m[gID] = struct{}{}
+			gIDs = append(gIDs, gID)
+		}
+	}
+	return gIDs
+}
+
 func (gus GroupUsers) ModelUserIDs() []model.UserID {
 	uIDs := make([]model.UserID, len(gus))
 	for i, v := range gus {
