@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 )
 
 type memoryGroupRepository struct {
@@ -19,8 +20,31 @@ func (r *memoryGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
 	return nil, nil
 }
 
-func (r *memoryGroupRepository) List() (model.Groups, error) {
-	return r.s.groups, nil
+func (r *memoryGroupRepository) List(f repository.GroupListFilter) (model.Groups, error) {
+	var result model.Groups
+	for _, g := range r.s.groups {
+		if len(f.UserIDs) > 0 {
+			found := false
+			for _, uID := range f.UserIDs {
+				for _, guID := range g.UserIDs() {
+					if uID == guID {
+						found = true
+						break
+					}
+				}
+				if found {
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+
+		result = append(result, g)
+	}
+
+	return result, nil
 }
 
 func (r *memoryGroupRepository) Create(g *model.Group) (*model.Group, error) {

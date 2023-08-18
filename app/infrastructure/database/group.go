@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database/datamodel"
 )
 
@@ -31,19 +32,60 @@ func (r *dbGroupRepository) Find(gID model.GroupID) (*model.Group, error) {
 	return dmg.ToModel(dmgus), nil
 }
 
-func (r *dbGroupRepository) List() (model.Groups, error) {
-	db := r.db
+func (r *dbGroupRepository) List(f repository.GroupListFilter) (model.Groups, error) {
+	var (
+		dmgs  datamodel.Groups
+		dmgus datamodel.GroupUsers
+	)
 
-	var dmgs datamodel.Groups
-	if err := db.Find(&dmgs).Error; err != nil {
-		return nil, err
+	gdb := r.db
+	gudb := r.db
+
+	if len(f.UserIDs) > 0 {
+		if err := gudb.Where("user_id IN (?)", f.UserIDs).Find(&dmgus).Error; err != nil {
+			return nil, err
+		}
+		if len(dmgus) == 0 {
+			return nil, nil
+
+		}
+
+		if err := gdb.Where("group_id IN (?)", dmgus.GroupIDs()).Find(&dmgs).Error; err != nil {
+			return nil, err
+		}
+	} else {
+		if err := gdb.Find(&dmgs).Error; err != nil {
+			return nil, err
+		}
+		if len(dmgs) == 0 {
+			return nil, nil
+		}
+
+		if err := gudb.Where("group_id IN (?)", dmgs.IDs()).Find(&dmgus).Error; err != nil {
+			return nil, err
+		}
 	}
-	if len(dmgs) == 0 {
+
+	return dmgs.ToModel(dmgus), nil
+}
+
+func (r *dbGroupRepository) ListByUserIDs(uIDs []model.UserID) (model.Groups, error) {
+	if len(uIDs) == 0 {
 		return nil, nil
 	}
 
+	gudb := r.db
 	var dmgus datamodel.GroupUsers
-	if err := r.db.Where("group_id IN (?)", dmgs.IDs()).Find(&dmgus).Error; err != nil {
+	if err := gudb.Where("user_id IN (?)", uIDs).Find(&dmgus).Error; err != nil {
+		return nil, err
+	}
+	if len(dmgus) == 0 {
+		return nil, nil
+	}
+
+	gdb := r.db
+	var dmgs datamodel.Groups
+	if err := gdb.Where("group_id IN (?)", dmgus.GroupIDs()).Find(&dmgs).Error; err != nil {
 		return nil, err
 	}
 

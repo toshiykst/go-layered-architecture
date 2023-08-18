@@ -4,10 +4,14 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 )
 
+type GroupListFilter struct {
+	UserIDs []model.UserID
+}
+
 // GroupRepositoryQuery is interface for query methods of group.
 type GroupRepositoryQuery interface {
 	Find(gID model.GroupID) (*model.Group, error)
-	List() (model.Groups, error)
+	List(f GroupListFilter) (model.Groups, error)
 }
 
 // GroupRepositoryCommand is interface for query and command methods of group.

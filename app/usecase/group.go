@@ -119,7 +119,7 @@ func (uc *groupUsecase) GetGroup(in *dto.GetGroupInput) (*dto.GetGroupOutput, er
 }
 
 func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, error) {
-	gs, err := uc.r.Group().List()
+	gs, err := uc.r.Group().List(repository.GroupListFilter{})
 	if err != nil {
 		return nil, err
 	}

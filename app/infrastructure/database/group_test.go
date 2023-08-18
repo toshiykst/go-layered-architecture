@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/testutil"
 )
 
@@ -226,23 +227,7 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 					[]model.UserID{"TEST_USER_ID_3"},
 				),
 			},
-			want: model.Groups{
-				model.NewGroup(
-					"TEST_GROUP_ID_1",
-					"TEST_GROUP_NAME_1",
-					[]model.UserID{"TEST_USER_ID_1"},
-				),
-				model.NewGroup(
-					"TEST_GROUP_ID_2",
-					"TEST_GROUP_NAME_2",
-					[]model.UserID{"TEST_USER_ID_2"},
-				),
-				model.NewGroup(
-					"TEST_GROUP_ID_3",
-					"TEST_GROUP_NAME_3",
-					[]model.UserID{"TEST_USER_ID_3"},
-				),
-			},
+			want:              nil,
 			wantGroupsSQL:     "SELECT * FROM `groups`",
 			wantGroupUsersSQL: "SELECT * FROM `group_users` WHERE group_id IN (?,?,?)",
 			wantErr:           errors.New("an error occurred"),
@@ -275,7 +260,7 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 				if tt.wantGroupUsersSQL != "" {
 					groupUsersExpectQuery := mock.
 						ExpectQuery(regexp.QuoteMeta(tt.wantGroupUsersSQL)).
-						WithArgs(testutil.ToDriverValues[model.GroupID](t, tt.want.IDs()...)...)
+						WithArgs(testutil.ToDriverValues[model.GroupID](t, tt.groups.IDs()...)...)
 					if tt.dbGroupUsersErr != nil {
 						groupUsersExpectQuery.WillReturnError(tt.dbGroupUsersErr)
 					} else {
@@ -292,7 +277,7 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 			}
 
 			r := &dbGroupRepository{db: db}
-			got, err := r.List()
+			got, err := r.List(repository.GroupListFilter{})
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Fatalf("want an error, but has no error")
@@ -308,6 +293,175 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 					t.Errorf(
 						"r.List()=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
 						got, tt.want, diff,
+					)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestDatabase_dbGroupRepository_List_FilterByUserIDs(t *testing.T) {
+	tests := []struct {
+		name              string
+		filter            repository.GroupListFilter
+		groups            model.Groups
+		want              model.Groups
+		wantErr           error
+		wantGroupUsersSQL string
+		wantGroupsSQL     string
+		dbGroupUsersErr   error
+		dbGroupsErr       error
+	}{
+		{
+			name: "Returns groups by user ids",
+			filter: repository.GroupListFilter{
+				UserIDs: []model.UserID{"TEST_USER_ID_1", "TEST_USER_ID_2"},
+			},
+			groups: model.Groups{
+				model.NewGroup(
+					"TEST_GROUP_ID_1",
+					"TEST_GROUP_NAME_1",
+					[]model.UserID{"TEST_USER_ID_1"},
+				),
+				model.NewGroup(
+					"TEST_GROUP_ID_2",
+					"TEST_GROUP_NAME_2",
+					[]model.UserID{"TEST_USER_ID_2"},
+				),
+			},
+			want: model.Groups{
+				model.NewGroup(
+					"TEST_GROUP_ID_1",
+					"TEST_GROUP_NAME_1",
+					[]model.UserID{"TEST_USER_ID_1"},
+				),
+				model.NewGroup(
+					"TEST_GROUP_ID_2",
+					"TEST_GROUP_NAME_2",
+					[]model.UserID{"TEST_USER_ID_2"},
+				),
+			},
+			wantGroupUsersSQL: "SELECT * FROM `group_users` WHERE user_id IN (?,?)",
+			wantGroupsSQL:     "SELECT * FROM `groups` WHERE group_id IN (?,?)",
+			wantErr:           nil,
+			dbGroupUsersErr:   nil,
+			dbGroupsErr:       nil,
+		},
+		{
+			name: "Group users not found",
+			filter: repository.GroupListFilter{
+				UserIDs: []model.UserID{"TEST_USER_ID_1", "TEST_USER_ID_2"},
+			},
+			groups:            nil,
+			want:              nil,
+			wantGroupUsersSQL: "SELECT * FROM `group_users` WHERE user_id IN (?,?)",
+			wantGroupsSQL:     "",
+			wantErr:           nil,
+			dbGroupUsersErr:   nil,
+			dbGroupsErr:       nil,
+		},
+		{
+			name: "DB groupusers error",
+			filter: repository.GroupListFilter{
+				UserIDs: []model.UserID{"TEST_USER_ID_1", "TEST_USER_ID_2"},
+			},
+			groups:            nil,
+			want:              nil,
+			wantGroupUsersSQL: "SELECT * FROM `group_users` WHERE user_id IN (?,?)",
+			wantGroupsSQL:     "",
+			wantErr:           errors.New("an error occurred"),
+			dbGroupUsersErr:   errors.New("an error occurred"),
+			dbGroupsErr:       nil,
+		},
+		{
+			name: "DB groups error",
+			filter: repository.GroupListFilter{
+				UserIDs: []model.UserID{"TEST_USER_ID_1", "TEST_USER_ID_2"},
+			},
+			groups: model.Groups{
+				model.NewGroup(
+					"TEST_GROUP_ID_1",
+					"TEST_GROUP_NAME_1",
+					[]model.UserID{"TEST_USER_ID_1"},
+				),
+				model.NewGroup(
+					"TEST_GROUP_ID_2",
+					"TEST_GROUP_NAME_2",
+					[]model.UserID{"TEST_USER_ID_2"},
+				),
+			},
+			want:              nil,
+			wantGroupUsersSQL: "SELECT * FROM `group_users` WHERE user_id IN (?,?)",
+			wantGroupsSQL:     "SELECT * FROM `groups` WHERE group_id IN (?,?)",
+			wantErr:           errors.New("an error occurred"),
+			dbGroupUsersErr:   nil,
+			dbGroupsErr:       errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			if tt.wantGroupUsersSQL != "" {
+				groupUsersExpectQuery := mock.
+					ExpectQuery(regexp.QuoteMeta(tt.wantGroupUsersSQL)).
+					WithArgs(testutil.ToDriverValues[model.UserID](t, tt.filter.UserIDs...)...)
+				if tt.dbGroupUsersErr != nil {
+					groupUsersExpectQuery.WillReturnError(tt.dbGroupUsersErr)
+				} else {
+					now := time.Now()
+					groupUserRows := sqlmock.
+						NewRows([]string{"group_id", "user_id", "created_at"})
+					for _, g := range tt.groups {
+						for _, uID := range g.UserIDs() {
+							groupUserRows.AddRow(g.ID(), uID, now)
+						}
+					}
+					groupUsersExpectQuery.WillReturnRows(groupUserRows)
+
+					if tt.wantGroupsSQL != "" {
+						groupsExpectQuery := mock.ExpectQuery(regexp.QuoteMeta(tt.wantGroupsSQL))
+						if tt.dbGroupsErr != nil {
+							groupsExpectQuery.WillReturnError(tt.dbGroupsErr)
+						} else {
+							now := time.Now()
+							groupRows := sqlmock.NewRows([]string{"id", "name", "created_at", "updated_at"})
+							for _, g := range tt.groups {
+								groupRows.AddRow(g.ID(), g.Name(), now, now)
+							}
+							groupsExpectQuery.WillReturnRows(groupRows)
+						}
+					}
+				}
+			}
+
+			r := &dbGroupRepository{db: db}
+			got, err := r.List(tt.filter)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatalf("want an error, but has no error")
+				}
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("r.List(%v)=_, %v; want _, %v", tt.filter, got, tt.want)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no err, but has error %v", err)
+				}
+				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.Group{})); diff != "" {
+					t.Errorf(
+						"r.List(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
+						tt.filter, got, tt.want, diff,
 					)
 				}
 			}
