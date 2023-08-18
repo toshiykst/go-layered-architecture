@@ -37,21 +37,21 @@ func main() {
 	})
 
 	uf := factory.NewUserFactory()
-	us := domainservice.NewUserService(db)
-	uuc := usecase.NewUserUsecase(db, uf, us)
-	uh := handler.NewUserHandler(uuc)
+	gf := factory.NewGroupFactory()
 
+	us := domainservice.NewUserService(db)
+	gs := domainservice.NewGroupService(db)
+
+	uuc := usecase.NewUserUsecase(db, uf, us, gs)
+	uh := handler.NewUserHandler(uuc)
 	e.POST("/users", uh.CreateUser)
 	e.GET("/users/:id", uh.GetUser)
 	e.GET("/users", uh.GetUsers)
 	e.PUT("/users/:id", uh.UpdateUser)
 	e.DELETE("/users/:id", uh.DeleteUser)
 
-	gf := factory.NewGroupFactory()
-	gs := domainservice.NewGroupService(db)
 	guc := usecase.NewGroupUsecase(db, gf, gs, us)
 	gh := handler.NewGroupHandler(guc)
-
 	e.POST("/groups", gh.CreateGroup)
 	e.GET("/groups/:id", gh.GetGroup)
 	e.GET("/groups", gh.GetGroups)

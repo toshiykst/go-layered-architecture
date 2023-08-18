@@ -20,17 +20,19 @@ type UserUsecase interface {
 }
 
 type userUsecase struct {
-	r repository.Repository
-	f factory.UserFactory
-	s domainservice.UserService
+	r  repository.Repository
+	f  factory.UserFactory
+	us domainservice.UserService
+	gs domainservice.GroupService
 }
 
 func NewUserUsecase(
 	r repository.Repository,
 	f factory.UserFactory,
-	s domainservice.UserService,
+	us domainservice.UserService,
+	gs domainservice.GroupService,
 ) UserUsecase {
-	return &userUsecase{r: r, f: f, s: s}
+	return &userUsecase{r: r, f: f, us: us, gs: gs}
 }
 
 func (uc *userUsecase) CreateUser(in *dto.CreateUserInput) (*dto.CreateUserOutput, error) {
@@ -93,7 +95,7 @@ func (uc *userUsecase) GetUsers(_ *dto.GetUsersInput) (*dto.GetUsersOutput, erro
 func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
 	u := model.NewUser(model.UserID(in.UserID), in.Name, in.Email)
 
-	isExisted, err := uc.s.Exists(u.ID())
+	isExisted, err := uc.us.Exists(u.ID())
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +118,7 @@ func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutpu
 func (uc *userUsecase) DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutput, error) {
 	uID := model.UserID(in.UserID)
 
-	isExisted, err := uc.s.Exists(uID)
+	isExisted, err := uc.us.Exists(uID)
 	if err != nil {
 		return nil, err
 	}
@@ -124,8 +126,18 @@ func (uc *userUsecase) DeleteUser(in *dto.DeleteUserInput) (*dto.DeleteUserOutpu
 		return nil, ErrUserNotFound
 	}
 
-	//　TODO: Remove the user from groups if it's in groups.
+	hasGroupUser, err := uc.gs.HasUsersAny([]model.UserID{uID})
+	if err != nil {
+		return nil, err
+	}
+
 	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
+		if hasGroupUser {
+			if err := tx.Group().RemoveUsersFromAll([]model.UserID{uID}); err != nil {
+				return err
+			}
+		}
+
 		if err := tx.User().Delete(uID); err != nil {
 			return err
 		}

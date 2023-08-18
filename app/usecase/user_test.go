@@ -59,8 +59,9 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			r := tt.newMemoryRepository()
-			s := domainservice.NewUserService(r)
-			uc := NewUserUsecase(r, tt.newMockFactory(ctrl), s)
+			us := domainservice.NewUserService(r)
+			gs := domainservice.NewGroupService(r)
+			uc := NewUserUsecase(r, tt.newMockFactory(ctrl), us, gs)
 
 			got, err := uc.CreateUser(tt.in)
 			if err != nil {
@@ -125,8 +126,9 @@ func TestUserUsecase_GetUser(t *testing.T) {
 			defer ctrl.Finish()
 
 			r := tt.newMemoryRepository()
-			s := domainservice.NewUserService(r)
-			uc := NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), s)
+			us := domainservice.NewUserService(r)
+			gs := domainservice.NewGroupService(r)
+			uc := NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), us, gs)
 
 			got, err := uc.GetUser(tt.in)
 			if tt.wantErr != nil {
@@ -203,13 +205,12 @@ func TestUserUsecase_GetUsers(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
+
 			r := tt.newMemoryRepository()
 			us := domainservice.NewUserService(r)
-			uc := NewUserUsecase(
-				r,
-				mockfactory.NewMockUserFactory(ctrl),
-				us,
-			)
+			gs := domainservice.NewGroupService(r)
+			uc := NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), us, gs)
+
 			got, err := uc.GetUsers(tt.in)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -288,8 +289,9 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 
 			f := mockfactory.NewMockUserFactory(ctrl)
 			r := tt.newMemoryRepository()
-			s := domainservice.NewUserService(r)
-			uc := NewUserUsecase(r, f, s)
+			us := domainservice.NewUserService(r)
+			gs := domainservice.NewGroupService(r)
+			uc := NewUserUsecase(r, f, us, gs)
 
 			_, err := uc.UpdateUser(tt.in)
 			if tt.wantErr != nil {
@@ -339,6 +341,34 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 			},
 		},
 		{
+			name: "Delete a user and remove from all groups",
+			in: &dto.DeleteUserInput{
+				UserID: "TEST_USER_ID",
+			},
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				s.AddGroups(model.NewGroup(
+					"TEST_GROUP_ID_1",
+					"TEST_GROUP_NAME_1",
+					[]model.UserID{
+						"TEST_USER_ID_1",
+						"TEST_USER_ID_2",
+					}),
+				)
+				s.AddGroups(model.NewGroup(
+					"TEST_GROUP_ID_2",
+					"TEST_GROUP_NAME_2",
+					[]model.UserID{
+						"TEST_USER_ID_1",
+						"TEST_USER_ID_3",
+					}),
+				)
+				r := memory.NewMemoryRepository(s)
+				return r
+			},
+		},
+		{
 			name: "Returns error if the user does not exist",
 			in: &dto.DeleteUserInput{
 				UserID: "TEST_USER_ID",
@@ -359,9 +389,10 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 
 			f := mockfactory.NewMockUserFactory(ctrl)
 			r := tt.newMemoryRepository()
-			s := domainservice.NewUserService(r)
+			us := domainservice.NewUserService(r)
+			gs := domainservice.NewGroupService(r)
 
-			uc := NewUserUsecase(r, f, s)
+			uc := NewUserUsecase(r, f, us, gs)
 			_, err := uc.DeleteUser(tt.in)
 
 			if tt.wantErr != nil {
@@ -380,9 +411,14 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 				}
 
 				uID := model.UserID(tt.in.UserID)
-				got, _ := r.User().Find(uID)
-				if got != nil {
-					t.Errorf("r.User().Find(%s)=%v, _; want nil", uID, got)
+				gotUser, _ := r.User().Find(uID)
+				if gotUser != nil {
+					t.Errorf("r.User().Find(%s)=%v, _; want nil", uID, gotUser)
+				}
+
+				hasGroupTargetUser, _ := gs.HasUsersAny([]model.UserID{uID})
+				if hasGroupTargetUser {
+					t.Errorf("any of groups have the target user")
 				}
 			}
 		})
