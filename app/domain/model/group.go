@@ -1,5 +1,7 @@
 package model
 
+const maxGroupUserCount = 5
+
 type GroupID string
 
 type Group struct {
@@ -35,6 +37,16 @@ func (g *Group) UserIDs() []UserID {
 		return nil
 	}
 	return g.userIDs
+}
+
+func (g *Group) IsMaxUsers() bool {
+	if g == nil {
+		return false
+	}
+	if len(g.userIDs) < maxGroupUserCount {
+		return false
+	}
+	return true
 }
 
 type Groups []*Group

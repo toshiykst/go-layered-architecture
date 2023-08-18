@@ -88,6 +88,56 @@ func TestGroup_UserIDs(t *testing.T) {
 	}
 }
 
+func TestGroup_IsMaxUser(t *testing.T) {
+	tests := []struct {
+		name  string
+		group *Group
+		want  bool
+	}{
+		{
+			name: "Returns true if the number of group users is max",
+			group: &Group{
+				id:   "TEST_GROUP_ID",
+				name: "TEST_GROUP_NAME",
+				userIDs: []UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+					"TEST_USER_ID_4",
+					"TEST_USER_ID_5",
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Returns false if the number of group users is less than max",
+			group: &Group{
+				id:   "TEST_GROUP_ID",
+				name: "TEST_GROUP_NAME",
+				userIDs: []UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			want: false,
+		},
+		{
+			name:  "Receiver is nil",
+			group: nil,
+			want:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.group.IsMaxUsers(); got != tt.want {
+				t.Errorf("IsMaxUsers()=%t; want %v, receiver=%v", got, tt.want, tt.group)
+			}
+		})
+	}
+}
+
 func TestGroups_IDs(t *testing.T) {
 	tests := []struct {
 		name   string
