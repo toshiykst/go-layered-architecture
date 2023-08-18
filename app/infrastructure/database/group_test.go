@@ -891,3 +891,91 @@ func TestDatabase_dbGroupRepository_RemoveUsers(t *testing.T) {
 		})
 	}
 }
+
+func TestDatabase_dbGroupRepository_RemoveUsersFromAll(t *testing.T) {
+	type args struct {
+		uIDs []model.UserID
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		dbErr   error
+		wantErr error
+	}{
+		{
+			name: "Delete group users from all groups",
+			args: args{
+				uIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			dbErr:   nil,
+			wantErr: nil,
+		},
+		{
+			name: "Returns error if user ids are empty",
+			args: args{
+				uIDs: []model.UserID{},
+			},
+			dbErr:   nil,
+			wantErr: errors.New("user ids must not be empty"),
+		},
+		{
+			name: "DB error",
+			args: args{
+				uIDs: []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			dbErr:   errors.New("an error occurred"),
+			wantErr: errors.New("an error occurred"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock, db := testutil.DBMock(t)
+			sqlDB, err := db.DB()
+			if err != nil {
+				t.Fatalf("want no err, but has error %v", err)
+			}
+			defer sqlDB.Close()
+
+			if tt.wantErr == nil || tt.dbErr != nil {
+				expectExec := mock.
+					ExpectExec(regexp.QuoteMeta("DELETE FROM `groups` WHERE user_id IN (?,?,?)")).
+					WithArgs(tt.args.uIDs[0], tt.args.uIDs[1], tt.args.uIDs[2])
+
+				if tt.wantErr != nil {
+					expectExec.WillReturnError(tt.wantErr)
+				} else {
+					expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+				}
+			}
+
+			r := &dbGroupRepository{db: db}
+			err = r.RemoveUsersFromAll(tt.args.uIDs)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatal("want an error, but has no error")
+				}
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("r.RemoveUsersFromAll(%v)=%v; want %v", tt.args.uIDs, err, tt.wantErr)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no err, but has error %v", err)
+				}
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("there were unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}

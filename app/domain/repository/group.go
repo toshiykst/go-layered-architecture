@@ -22,4 +22,5 @@ type GroupRepositoryCommand interface {
 	Delete(gID model.GroupID) error
 	AddUsers(gID model.GroupID, uIDs []model.UserID) error
 	RemoveUsers(gID model.GroupID, uIDs []model.UserID) error
+	RemoveUsersFromAll(uIDs []model.UserID) error
 }

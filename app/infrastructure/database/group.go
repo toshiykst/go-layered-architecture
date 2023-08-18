@@ -147,3 +147,14 @@ func (r *dbGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) 
 		Delete(&datamodel.Group{}).
 		Error
 }
+
+func (r *dbGroupRepository) RemoveUsersFromAll(uIDs []model.UserID) error {
+	if len(uIDs) == 0 {
+		return errors.New("user ids must not be empty")
+	}
+
+	return r.db.
+		Where("user_id IN (?)", uIDs).
+		Delete(&datamodel.Group{}).
+		Error
+}

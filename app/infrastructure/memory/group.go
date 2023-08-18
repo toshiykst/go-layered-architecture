@@ -100,9 +100,25 @@ func (r *memoryGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.User
 					}
 				}
 			}
-			r.s.groups[i] = model.NewGroup(gID, g.Name(), removed)
+			r.s.groups[i] = model.NewGroup(g.ID(), g.Name(), removed)
 			return nil
 		}
+	}
+	return nil
+}
+
+func (r *memoryGroupRepository) RemoveUsersFromAll(uIDs []model.UserID) error {
+	for i, g := range r.s.groups {
+		var removed []model.UserID
+		for _, guID := range r.s.groups[i].UserIDs() {
+			for _, uID := range uIDs {
+				if guID != uID {
+					removed = append(removed, guID)
+				}
+			}
+		}
+		r.s.groups[i] = model.NewGroup(g.ID(), g.Name(), removed)
+		return nil
 	}
 	return nil
 }
