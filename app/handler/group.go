@@ -42,11 +42,13 @@ func (h *GroupHandler) CreateGroup(c echo.Context) error {
 	}
 	out, err := h.uc.CreateGroup(in)
 	if err != nil {
+		if errors.Is(err, usecase.ErrInvalidGroupInput) {
+			return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
+		}
 		if errors.Is(err, usecase.ErrInvalidUserIDs) {
 			return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
-		} else {
-			return response.ErrorInternal(c, err)
 		}
+		return response.ErrorInternal(c, err)
 	}
 
 	us := make([]response.User, len(out.Group.Users))
@@ -142,9 +144,12 @@ func (h *GroupHandler) UpdateGroup(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, usecase.ErrGroupNotFound) {
 			return response.Error(c, response.ErrorCodeGroupNotFound, http.StatusNotFound, err)
-		} else {
-			return response.ErrorInternal(c, err)
 		}
+		if errors.Is(err, usecase.ErrInvalidGroupInput) {
+			return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
+		}
+		return response.ErrorInternal(c, err)
+
 	}
 
 	return response.NoContent(c)

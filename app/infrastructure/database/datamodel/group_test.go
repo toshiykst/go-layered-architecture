@@ -76,7 +76,7 @@ func TestGroup_ToModel(t *testing.T) {
 					},
 				},
 			},
-			want: model.NewGroup(
+			want: model.MustNewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME",
 				[]model.UserID{
@@ -197,17 +197,17 @@ func TestGroups_ToModel(t *testing.T) {
 				},
 			},
 			want: model.Groups{
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]model.UserID{"TEST_USER_ID_1"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]model.UserID{"TEST_USER_ID_2"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_3",
 					"TEST_GROUP_NAME_3",
 					[]model.UserID{"TEST_USER_ID_3"},

@@ -1,10 +1,145 @@
 package model
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 )
+
+func TestNewGroup(t *testing.T) {
+	type args struct {
+		id   GroupID
+		name string
+		uIDs []UserID
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *Group
+		wantErr error
+	}{
+		{
+			name: "Returns group",
+			args: args{
+				id:   "TEST_GROUP_ID",
+				name: "TEST_GROUP_NAME",
+				uIDs: []UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+					"TEST_USER_ID_4",
+					"TEST_USER_ID_5",
+				},
+			},
+			want: &Group{
+				id:   "TEST_GROUP_ID",
+				name: "TEST_GROUP_NAME",
+				userIDs: []UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+					"TEST_USER_ID_4",
+					"TEST_USER_ID_5",
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "Error empty group id",
+			args: args{
+				id:   "",
+				name: "TEST_GROUP_NAME",
+				uIDs: []UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+					"TEST_USER_ID_4",
+					"TEST_USER_ID_5",
+				},
+			},
+			want:    nil,
+			wantErr: ErrInvalidGroup,
+		},
+		{
+			name: "Error empty group name",
+			args: args{
+				id:   "TEST_GROUP_ID",
+				name: "",
+				uIDs: []UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+					"TEST_USER_ID_4",
+					"TEST_USER_ID_5",
+				},
+			},
+			want:    nil,
+			wantErr: ErrInvalidGroup,
+		},
+		{
+			name: "Error exceeds the max group name length",
+			args: args{
+				id:   "TEST_GROUP_ID",
+				name: strings.Repeat("x", maxGroupNameLength+1),
+				uIDs: []UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+					"TEST_USER_ID_4",
+					"TEST_USER_ID_5",
+				},
+			},
+			want:    nil,
+			wantErr: ErrInvalidGroup,
+		},
+		{
+			name: "Error exceeds the max group users",
+			args: args{
+				id:   "TEST_GROUP_ID",
+				name: "TEST_GROUP_NAME",
+				uIDs: []UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+					"TEST_USER_ID_4",
+					"TEST_USER_ID_5",
+					"TEST_USER_ID_6",
+				},
+			},
+			want:    nil,
+			wantErr: ErrInvalidGroup,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := NewGroup(tt.args.id, tt.args.name, tt.args.uIDs)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatal("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf(
+						"NewGroup(%s, %s, %v)=_, %v; want _, %v",
+						tt.args.id, tt.args.name, tt.args.uIDs, err, tt.wantErr,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no error, but has error %v", err)
+				}
+				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(Group{})); diff != "" {
+					t.Errorf(
+						"NewGroup(%s, %s, %v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
+						tt.args.id, tt.args.name, tt.args.uIDs, err, tt.wantErr, diff,
+					)
+				}
+			}
+		})
+	}
+}
 
 func TestGroup_ID(t *testing.T) {
 	tests := []struct {
@@ -147,17 +282,17 @@ func TestGroups_IDs(t *testing.T) {
 		{
 			name: "Returns group ids",
 			groups: Groups{
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]UserID{"TEST_USER_ID_1"},
 				),
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]UserID{"TEST_USER_ID_2"},
 				),
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_3",
 					"TEST_GROUP_NAME_3",
 					[]UserID{"TEST_USER_ID_3"},
@@ -198,17 +333,17 @@ func TestGroups_UserIDs(t *testing.T) {
 		{
 			name: "Returns user ids",
 			groups: Groups{
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]UserID{"TEST_USER_ID_1"},
 				),
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]UserID{"TEST_USER_ID_1", "TEST_USER_ID_2"},
 				),
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_3",
 					"TEST_GROUP_NAME_3",
 					[]UserID{"TEST_USER_ID_1", "TEST_USER_ID_2", "TEST_USER_ID_3"},
@@ -223,17 +358,17 @@ func TestGroups_UserIDs(t *testing.T) {
 		{
 			name: "Returns nil when all groups have no user ids",
 			groups: Groups{
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]UserID{},
 				),
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]UserID{},
 				),
-				NewGroup(
+				MustNewGroup(
 					"TEST_GROUP_ID_3",
 					"TEST_GROUP_NAME_3",
 					[]UserID{},

@@ -145,6 +145,31 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 			wantErrRes: nil,
 		},
 		{
+			name: "Returns invalid arguments error response when group input is invalid",
+			req: &CreateGroupRequest{
+				Name: "TEST_GROUP_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				UserIDs: []string{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					CreateGroup(gomock.Any()).
+					Return(nil, usecase.ErrInvalidGroupInput)
+				return uc
+			},
+			wantStatus: http.StatusBadRequest,
+			wantRes:    nil,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInvalidArguments,
+				Status:  http.StatusBadRequest,
+				Message: usecase.ErrInvalidGroupInput.Error(),
+			},
+		},
+		{
 			name: "Returns invalid arguments error response when some of user ids are invalid",
 			req: &CreateGroupRequest{
 				Name: "TEST_GROUP_NAME",
@@ -676,6 +701,40 @@ func TestGroupHandler_UpdateGroup(t *testing.T) {
 			},
 			wantStatus: http.StatusNoContent,
 			wantErrRes: nil,
+		},
+		{
+			name: "Returns group not found error response",
+			gID:  "TEST_GROUP_ID",
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					UpdateGroup(gomock.Any()).
+					Return(nil, usecase.ErrGroupNotFound)
+				return uc
+			},
+			wantStatus: http.StatusNotFound,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeGroupNotFound,
+				Status:  http.StatusNotFound,
+				Message: usecase.ErrGroupNotFound.Error(),
+			},
+		},
+		{
+			name: "Returns invalid arguments error response when group input is invalid",
+			gID:  "TEST_GROUP_ID",
+			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
+				uc := mockusecase.NewMockGroupUsecase(ctrl)
+				uc.EXPECT().
+					UpdateGroup(gomock.Any()).
+					Return(nil, usecase.ErrInvalidGroupInput)
+				return uc
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInvalidArguments,
+				Status:  http.StatusBadRequest,
+				Message: usecase.ErrInvalidGroupInput.Error(),
+			},
 		},
 		{
 			name: "Returns group not found error response",

@@ -53,7 +53,7 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				f := mockfactory.NewMockGroupFactory(ctrl)
 				f.EXPECT().
 					Create("TEST_GROUP_NAME").
-					Return(model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
+					Return(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
 				return f
 			},
 		},
@@ -105,7 +105,37 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				f := mockfactory.NewMockGroupFactory(ctrl)
 				f.EXPECT().
 					Create("TEST_GROUP_NAME").
-					Return(model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
+					Return(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
+				return f
+			},
+		},
+		{
+			name: "Returns error if any of group inputs are invalid",
+			in: &dto.CreateGroupInput{
+				Name: "TEST_GROUP_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				UserIDs: []string{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			},
+			want:    nil,
+			wantErr: ErrInvalidGroupInput,
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				s.AddUsers(
+					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+				)
+				r := memory.NewMemoryRepository(s)
+				return r
+			},
+			newMockFactory: func(ctrl *gomock.Controller) factory.GroupFactory {
+				f := mockfactory.NewMockGroupFactory(ctrl)
+				f.EXPECT().
+					Create(gomock.Any()).
+					Return(nil, model.ErrInvalidGroup)
 				return f
 			},
 		},
@@ -135,7 +165,7 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				f := mockfactory.NewMockGroupFactory(ctrl)
 				f.EXPECT().
 					Create("TEST_GROUP_NAME").
-					Return(model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
+					Return(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
 				return f
 			},
 		},
@@ -216,7 +246,7 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 			wantErr: nil,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddGroups(model.NewGroup(
+				s.AddGroups(model.MustNewGroup(
 					"TEST_GROUP_ID",
 					"TEST_GROUP_NAME",
 					[]model.UserID{
@@ -351,14 +381,14 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddGroups(
-					model.NewGroup(
+					model.MustNewGroup(
 						"TEST_GROUP_ID_1",
 						"TEST_GROUP_NAME_1",
 						[]model.UserID{
 							"TEST_USER_ID_1",
 						},
 					),
-					model.NewGroup(
+					model.MustNewGroup(
 						"TEST_GROUP_ID_2",
 						"TEST_GROUP_NAME_2",
 						[]model.UserID{
@@ -366,7 +396,7 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 							"TEST_USER_ID_2",
 						},
 					),
-					model.NewGroup(
+					model.MustNewGroup(
 						"TEST_GROUP_ID_3",
 						"TEST_GROUP_NAME_3",
 						[]model.UserID{
@@ -422,17 +452,17 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddGroups(
-					model.NewGroup(
+					model.MustNewGroup(
 						"TEST_GROUP_ID_1",
 						"TEST_GROUP_NAME_1",
 						[]model.UserID{},
 					),
-					model.NewGroup(
+					model.MustNewGroup(
 						"TEST_GROUP_ID_2",
 						"TEST_GROUP_NAME_2",
 						[]model.UserID{},
 					),
-					model.NewGroup(
+					model.MustNewGroup(
 						"TEST_GROUP_ID_3",
 						"TEST_GROUP_NAME_3",
 						[]model.UserID{},
@@ -495,18 +525,32 @@ func TestGroupUsecase_UpdateGroup(t *testing.T) {
 				GroupID: "TEST_GROUP_ID",
 				Name:    "TEST_GROUP_NAME_UPDATED",
 			},
-			wantGroup: model.NewGroup(
+			wantGroup: model.MustNewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME_UPDATED",
 				[]model.UserID{},
 			),
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddGroups(model.NewGroup(
+				s.AddGroups(model.MustNewGroup(
 					"TEST_GROUP_ID",
 					"TEST_GROUP_NAME_UPDATED",
 					[]model.UserID{},
 				))
+				r := memory.NewMemoryRepository(s)
+				return r
+			},
+		},
+		{
+			name: "Returns error if any of group inputs are invalid",
+			in: &dto.UpdateGroupInput{
+				GroupID: "TEST_GROUP_ID",
+				Name:    "TEST_GROUP_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+			},
+			wantGroup: nil,
+			wantErr:   ErrInvalidGroupInput,
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
 				return r
 			},
@@ -580,7 +624,7 @@ func TestGroupUsecase_DeleteGroup(t *testing.T) {
 			},
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddGroups(model.NewGroup(
+				s.AddGroups(model.MustNewGroup(
 					"TEST_GROUP_ID",
 					"TEST_GROUP_NAME",
 					[]model.UserID{},
@@ -596,7 +640,7 @@ func TestGroupUsecase_DeleteGroup(t *testing.T) {
 			},
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddGroups(model.NewGroup(
+				s.AddGroups(model.MustNewGroup(
 					"TEST_GROUP_ID",
 					"TEST_GROUP_NAME",
 					[]model.UserID{

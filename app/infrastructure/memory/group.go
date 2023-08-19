@@ -81,7 +81,11 @@ func (r *memoryGroupRepository) Delete(gID model.GroupID) error {
 func (r *memoryGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {
 	for i, g := range r.s.groups {
 		if g.ID() == gID {
-			r.s.groups[i] = model.NewGroup(gID, g.Name(), append(g.UserIDs(), uIDs...))
+			mg, err := model.NewGroup(gID, g.Name(), append(g.UserIDs(), uIDs...))
+			if err != nil {
+				return err
+			}
+			r.s.groups[i] = mg
 			return nil
 		}
 	}
@@ -91,18 +95,32 @@ func (r *memoryGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID)
 
 func (r *memoryGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) error {
 	for i, g := range r.s.groups {
-		if g.ID() == gID {
-			var removed []model.UserID
-			for _, guID := range r.s.groups[i].UserIDs() {
-				for _, uID := range uIDs {
-					if guID != uID {
-						removed = append(removed, guID)
-					}
+		if g.ID() != gID {
+			continue
+		}
+
+		var removed []model.UserID
+		for _, guID := range r.s.groups[i].UserIDs() {
+			found := false
+			for _, uID := range uIDs {
+				if guID == uID {
+					found = true
+					break
 				}
 			}
-			r.s.groups[i] = model.NewGroup(g.ID(), g.Name(), removed)
-			return nil
+			if !found {
+				removed = append(removed, guID)
+			}
 		}
+
+		mg, err := model.NewGroup(g.ID(), g.Name(), removed)
+		if err != nil {
+			return err
+		}
+
+		r.s.groups[i] = mg
+		return nil
+
 	}
 	return nil
 }
@@ -111,13 +129,23 @@ func (r *memoryGroupRepository) RemoveUsersFromAll(uIDs []model.UserID) error {
 	for i, g := range r.s.groups {
 		var removed []model.UserID
 		for _, guID := range r.s.groups[i].UserIDs() {
+			found := false
 			for _, uID := range uIDs {
-				if guID != uID {
-					removed = append(removed, guID)
+				if guID == uID {
+					found = true
+					break
 				}
 			}
+			if !found {
+				removed = append(removed, guID)
+			}
 		}
-		r.s.groups[i] = model.NewGroup(g.ID(), g.Name(), removed)
+		mg, err := model.NewGroup(g.ID(), g.Name(), removed)
+		if err != nil {
+			return err
+		}
+
+		r.s.groups[i] = mg
 		return nil
 	}
 	return nil

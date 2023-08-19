@@ -1,6 +1,18 @@
 package model
 
-const maxGroupUserCount = 5
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	ErrInvalidGroup = errors.New("invalid group id")
+)
+
+const (
+	maxGroupNameLength = 30
+	maxGroupUserCount  = 5
+)
 
 type GroupID string
 
@@ -10,12 +22,35 @@ type Group struct {
 	userIDs []UserID
 }
 
-func NewGroup(id GroupID, name string, uIDs []UserID) *Group {
+func NewGroup(id GroupID, name string, uIDs []UserID) (*Group, error) {
+	if id == "" {
+		return nil, fmt.Errorf("group id must not empty: %w", ErrInvalidGroup)
+	}
+
+	if name == "" {
+		return nil, fmt.Errorf("group name must not empty: %w", ErrInvalidGroup)
+	}
+	if len(name) > maxGroupNameLength {
+		return nil, fmt.Errorf("exceeds the max group name length: %w", ErrInvalidGroup)
+	}
+
+	if len(uIDs) > maxGroupUserCount {
+		return nil, fmt.Errorf("exceeds the max group users: %w", ErrInvalidGroup)
+	}
+
 	return &Group{
 		id:      id,
 		name:    name,
 		userIDs: uIDs,
+	}, nil
+}
+
+func MustNewGroup(gID GroupID, name string, uIDs []UserID) *Group {
+	g, err := NewGroup(gID, name, uIDs)
+	if err != nil {
+		panic(err)
 	}
+	return g
 }
 
 func (g *Group) ID() GroupID {

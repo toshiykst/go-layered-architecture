@@ -28,7 +28,7 @@ func TestDatabase_dbGroupRepository_Find(t *testing.T) {
 		{
 			name: "Returns a group",
 			gID:  model.GroupID("TEST_GROUP_ID"),
-			want: model.NewGroup(
+			want: model.MustNewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME",
 				[]model.UserID{
@@ -149,34 +149,34 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 		{
 			name: "Returns groups",
 			groups: model.Groups{
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]model.UserID{"TEST_USER_ID_1"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]model.UserID{"TEST_USER_ID_2"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_3",
 					"TEST_GROUP_NAME_3",
 					[]model.UserID{"TEST_USER_ID_3"},
 				),
 			},
 			want: model.Groups{
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]model.UserID{"TEST_USER_ID_1"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]model.UserID{"TEST_USER_ID_2"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_3",
 					"TEST_GROUP_NAME_3",
 					[]model.UserID{"TEST_USER_ID_3"},
@@ -211,17 +211,17 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 		{
 			name: "DB groupusers error",
 			groups: model.Groups{
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]model.UserID{"TEST_USER_ID_1"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]model.UserID{"TEST_USER_ID_2"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_3",
 					"TEST_GROUP_NAME_3",
 					[]model.UserID{"TEST_USER_ID_3"},
@@ -322,24 +322,24 @@ func TestDatabase_dbGroupRepository_List_FilterByUserIDs(t *testing.T) {
 				UserIDs: []model.UserID{"TEST_USER_ID_1", "TEST_USER_ID_2"},
 			},
 			groups: model.Groups{
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]model.UserID{"TEST_USER_ID_1"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]model.UserID{"TEST_USER_ID_2"},
 				),
 			},
 			want: model.Groups{
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]model.UserID{"TEST_USER_ID_1"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]model.UserID{"TEST_USER_ID_2"},
@@ -383,12 +383,12 @@ func TestDatabase_dbGroupRepository_List_FilterByUserIDs(t *testing.T) {
 				UserIDs: []model.UserID{"TEST_USER_ID_1", "TEST_USER_ID_2"},
 			},
 			groups: model.Groups{
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]model.UserID{"TEST_USER_ID_1"},
 				),
-				model.NewGroup(
+				model.MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]model.UserID{"TEST_USER_ID_2"},
@@ -483,13 +483,13 @@ func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 	}{
 		{
 			name: "Creates a new group",
-			group: model.NewGroup(
+			group: model.MustNewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME",
 				[]model.UserID{},
 			),
 			dbErr: nil,
-			want: model.NewGroup(
+			want: model.MustNewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME",
 				[]model.UserID{},
@@ -498,7 +498,7 @@ func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 		},
 		{
 			name: "DB error",
-			group: model.NewGroup(
+			group: model.MustNewGroup(
 				"TEST_GROUP_ID",
 				"TEST_GROUP_NAME",
 				nil,
@@ -564,12 +564,12 @@ func TestDatabase_dbGroupRepository_Update(t *testing.T) {
 	}{
 		{
 			name:    "Updates a group",
-			group:   model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}),
+			group:   model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}),
 			wantErr: nil,
 		},
 		{
 			name:    "Error",
-			group:   model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}),
+			group:   model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}),
 			wantErr: errors.New("an error occurred"),
 		},
 	}

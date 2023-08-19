@@ -23,5 +23,10 @@ func (uf groupFactory) Create(name string) (*model.Group, error) {
 		return nil, err
 	}
 
-	return model.NewGroup(model.GroupID(uuid.String()), name, []model.UserID{}), nil
+	g, err := model.NewGroup(model.GroupID(uuid.String()), name, []model.UserID{})
+	if err != nil {
+		return nil, err
+	}
+
+	return g, nil
 }

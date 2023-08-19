@@ -18,7 +18,7 @@ func (g *Group) ToModel(gus GroupUsers) *model.Group {
 	if g == nil {
 		return nil
 	}
-	return model.NewGroup(
+	return model.MustNewGroup(
 		model.GroupID(g.ID),
 		g.Name,
 		gus.ModelUserIDs(),
@@ -45,7 +45,7 @@ func (gs Groups) ToModel(gus GroupUsers) model.Groups {
 	uIDsByGID := gus.ModelUserIDsByGroupID()
 	mgs := make(model.Groups, len(gs))
 	for i, g := range gs {
-		mgs[i] = model.NewGroup(
+		mgs[i] = model.MustNewGroup(
 			model.GroupID(g.ID),
 			g.Name,
 			uIDsByGID[g.ID],

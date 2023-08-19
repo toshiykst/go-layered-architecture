@@ -22,7 +22,7 @@ func TestGroupService_Exists(t *testing.T) {
 			want: true,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddGroups(model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}))
+				s.AddGroups(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}))
 				r := memory.NewMemoryRepository(s)
 				return r
 			},
@@ -70,7 +70,7 @@ func TestGroupService_HasUsersAny(t *testing.T) {
 			want: true,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddGroups(model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{
+				s.AddGroups(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{
 					"TEST_USER_ID_1",
 				}))
 				r := memory.NewMemoryRepository(s)
@@ -87,7 +87,7 @@ func TestGroupService_HasUsersAny(t *testing.T) {
 			want: false,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddGroups(model.NewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{
+				s.AddGroups(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{
 					"TEST_USER_ID_4",
 				}))
 				r := memory.NewMemoryRepository(s)

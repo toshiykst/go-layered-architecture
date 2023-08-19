@@ -348,7 +348,7 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
-				s.AddGroups(model.NewGroup(
+				s.AddGroups(model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",
 					[]model.UserID{
@@ -356,7 +356,7 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 						"TEST_USER_ID_2",
 					}),
 				)
-				s.AddGroups(model.NewGroup(
+				s.AddGroups(model.MustNewGroup(
 					"TEST_GROUP_ID_2",
 					"TEST_GROUP_NAME_2",
 					[]model.UserID{

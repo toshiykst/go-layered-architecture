@@ -2,6 +2,8 @@
 package usecase
 
 import (
+	"errors"
+
 	"github.com/labstack/gommon/log"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
@@ -36,13 +38,16 @@ func NewGroupUsecase(
 }
 
 func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupOutput, error) {
+	// TODO: Fix group factory to add args user ids
 	g, err := uc.f.Create(in.Name)
 	if err != nil {
+		if errors.Is(err, model.ErrInvalidGroup) {
+			return nil, errors.Join(ErrInvalidGroupInput, err)
+		}
 		return nil, err
 	}
 
 	uIDs := dto.ToModelUserIDs(in.UserIDs)
-
 	if len(uIDs) > 0 {
 		ok, err := uc.us.ExistsAll(uIDs)
 		if err != nil {
@@ -175,7 +180,10 @@ func (uc *groupUsecase) GetGroups(_ *dto.GetGroupsInput) (*dto.GetGroupsOutput, 
 }
 
 func (uc *groupUsecase) UpdateGroup(in *dto.UpdateGroupInput) (*dto.UpdateGroupOutput, error) {
-	g := model.NewGroup(model.GroupID(in.GroupID), in.Name, []model.UserID{})
+	g, err := model.NewGroup(model.GroupID(in.GroupID), in.Name, []model.UserID{})
+	if err != nil {
+		return nil, errors.Join(ErrInvalidGroupInput, err)
+	}
 
 	isExisted, err := uc.gs.Exists(g.ID())
 	if err != nil {
