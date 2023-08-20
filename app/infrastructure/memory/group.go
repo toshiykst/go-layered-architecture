@@ -48,9 +48,7 @@ func (r *memoryGroupRepository) List(f repository.GroupListFilter) (model.Groups
 }
 
 func (r *memoryGroupRepository) Create(g *model.Group) (*model.Group, error) {
-	// TODO: Fix later
-	//r.s.AddGroups(g)
-	r.s.AddGroups(model.MustNewGroup(g.ID(), g.Name(), []model.UserID{}))
+	r.s.AddGroups(g)
 	return g, nil
 }
 

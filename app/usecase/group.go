@@ -62,14 +62,6 @@ func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupO
 		if created, err = tx.Group().Create(g); err != nil {
 			return err
 		}
-
-		// TODO: Remove below and add users in Group().Create(g)
-		if len(uIDs) > 0 {
-			if err = tx.Group().AddUsers(created.ID(), uIDs); err != nil {
-				return err
-			}
-		}
-
 		return nil
 	}); err != nil {
 		return nil, err

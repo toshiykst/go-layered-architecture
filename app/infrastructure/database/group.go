@@ -47,7 +47,6 @@ func (r *dbGroupRepository) List(f repository.GroupListFilter) (model.Groups, er
 		}
 		if len(dmgus) == 0 {
 			return nil, nil
-
 		}
 
 		if err := gdb.Where("group_id IN (?)", dmgus.GroupIDs()).Find(&dmgs).Error; err != nil {
@@ -99,17 +98,23 @@ func (r *dbGroupRepository) Create(g *model.Group) (*model.Group, error) {
 		return nil, err
 	}
 
-	return dmg.ToModel(datamodel.GroupUsers{}), nil
+	dmgus := datamodel.NewGroupUsers(g.ID(), g.UserIDs())
+	if len(dmgus) > 0 {
+		if err := r.db.Create(dmgus).Error; err != nil {
+			return nil, err
+		}
+	}
+
+	return dmg.ToModel(dmgus), nil
 }
 
 func (r *dbGroupRepository) Update(g *model.Group) error {
 	if g.ID() == "" {
 		return errors.New("group id must not be empty")
 	}
-	if err := r.db.Model(&datamodel.Group{ID: string(g.ID())}).
-		Updates(map[string]any{
-			"name": g.Name(),
-		}).Error; err != nil {
+	if err := r.db.Model(&datamodel.Group{ID: string(g.ID())}).Updates(map[string]any{
+		"name": g.Name(),
+	}).Error; err != nil {
 		return err
 	}
 
