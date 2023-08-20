@@ -690,19 +690,73 @@ func TestDatabase_dbGroupRepository_Update(t *testing.T) {
 
 func TestDatabase_dbGroupRepository_Delete(t *testing.T) {
 	tests := []struct {
-		name    string
-		gID     model.GroupID
-		wantErr error
+		name              string
+		group             *model.Group
+		dbGroupsErr       error
+		dbGroupUsersErr   error
+		wantGroupsSQL     string
+		wantGroupUsersSQL string
+		wantErr           error
 	}{
 		{
-			name:    "Delete a group",
-			gID:     model.GroupID("TEST_GROUP_ID"),
-			wantErr: nil,
+			name: "Deletes a new group",
+			group: model.MustNewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{},
+			),
+			dbGroupUsersErr:   nil,
+			dbGroupsErr:       nil,
+			wantGroupUsersSQL: "",
+			wantGroupsSQL:     "DELETE FROM `groups` WHERE `groups`.`id` = ?",
+			wantErr:           nil,
 		},
 		{
-			name:    "Error",
-			gID:     model.GroupID("TEST_GROUP_ID"),
-			wantErr: errors.New("an error occurred"),
+			name: "Groups DB error",
+			group: model.MustNewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				nil,
+			),
+			dbGroupUsersErr:   nil,
+			dbGroupsErr:       errors.New("an error occurred"),
+			wantGroupUsersSQL: "",
+			wantGroupsSQL:     "DELETE FROM `groups` WHERE `groups`.`id` = ?",
+			wantErr:           errors.New("an error occurred"),
+		},
+		{
+			name: "Deletes a group with users",
+			group: model.MustNewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			),
+			dbGroupUsersErr:   nil,
+			dbGroupsErr:       nil,
+			wantGroupUsersSQL: "DELETE FROM `group_users` WHERE group_id = ?",
+			wantGroupsSQL:     "DELETE FROM `groups` WHERE `groups`.`id` = ?",
+			wantErr:           nil,
+		},
+		{
+			name: "Group Users DB error",
+			group: model.MustNewGroup(
+				"TEST_GROUP_ID",
+				"TEST_GROUP_NAME",
+				[]model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				},
+			),
+			dbGroupUsersErr:   errors.New("an error occurred"),
+			dbGroupsErr:       nil,
+			wantGroupUsersSQL: "DELETE FROM `group_users` WHERE group_id = ?",
+			wantGroupsSQL:     "",
+			wantErr:           errors.New("an error occurred"),
 		},
 	}
 
@@ -715,30 +769,41 @@ func TestDatabase_dbGroupRepository_Delete(t *testing.T) {
 			}
 			defer sqlDB.Close()
 
-			expectExec := mock.
-				ExpectExec(regexp.QuoteMeta("DELETE FROM `groups` WHERE `groups`.`id` = ?")).
-				WithArgs(tt.gID)
+			if tt.wantGroupUsersSQL != "" {
+				groupUsersExpectExec := mock.
+					ExpectExec(regexp.QuoteMeta(tt.wantGroupUsersSQL)).
+					WithArgs(tt.group.ID())
 
-			if tt.wantErr != nil {
-				expectExec.WillReturnError(tt.wantErr)
-			} else {
-				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+				if tt.dbGroupUsersErr != nil {
+					groupUsersExpectExec.WillReturnError(tt.dbGroupUsersErr)
+				} else {
+					groupUsersExpectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+				}
+			}
+
+			if tt.wantGroupsSQL != "" {
+				groupsExpectExec := mock.
+					ExpectExec(regexp.QuoteMeta(tt.wantGroupsSQL)).
+					WithArgs(tt.group.ID())
+				if tt.dbGroupsErr != nil {
+					groupsExpectExec.WillReturnError(tt.dbGroupsErr)
+				} else {
+					groupsExpectExec.WillReturnResult(sqlmock.NewResult(1, 1))
+				}
 			}
 
 			r := &dbGroupRepository{db: db}
-
-			err = r.Delete(tt.gID)
-
+			err = r.Delete(tt.group)
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Fatal("want an error, but has no error")
 				}
-				if !errors.Is(err, tt.wantErr) {
-					t.Errorf("r.Delete(%s)=%v; want %v", tt.gID, err, tt.wantErr)
+				if err.Error() != tt.wantErr.Error() {
+					t.Errorf("r.Delete(%v)=_, %v; want _, %v", tt.group, err, tt.wantErr)
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("want no error, but has error %v", err)
+					t.Errorf("want no error, but has error %v", err)
 				}
 			}
 

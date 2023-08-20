@@ -209,12 +209,7 @@ func (uc *groupUsecase) DeleteGroup(in *dto.DeleteGroupInput) (*dto.DeleteGroupO
 	}
 
 	if err := uc.r.RunTransaction(func(tx repository.Transaction) error {
-		if len(g.UserIDs()) > 0 {
-			if err = tx.Group().RemoveUsers(g.ID(), g.UserIDs()); err != nil {
-				return err
-			}
-		}
-		if err := tx.Group().Delete(gID); err != nil {
+		if err := tx.Group().Delete(g); err != nil {
 			return err
 		}
 		return nil

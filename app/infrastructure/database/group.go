@@ -121,10 +121,19 @@ func (r *dbGroupRepository) Update(g *model.Group) error {
 	return nil
 }
 
-func (r *dbGroupRepository) Delete(gID model.GroupID) error {
-	return r.db.Delete(&datamodel.Group{
-		ID: string(gID),
-	}).Error
+func (r *dbGroupRepository) Delete(g *model.Group) error {
+	if len(g.UserIDs()) > 0 {
+		if err := r.db.Where("group_id = ?", g.ID()).
+			Delete(&datamodel.GroupUser{}).Error; err != nil {
+			return err
+		}
+	}
+
+	if err := r.db.Delete(&datamodel.Group{ID: string(g.ID())}).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *dbGroupRepository) AddUsers(gID model.GroupID, uIDs []model.UserID) error {

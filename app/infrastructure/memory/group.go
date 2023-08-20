@@ -67,10 +67,11 @@ func (r *memoryGroupRepository) Update(g *model.Group) error {
 	return nil
 }
 
-func (r *memoryGroupRepository) Delete(gID model.GroupID) error {
+func (r *memoryGroupRepository) Delete(g *model.Group) error {
+	gID := g.ID()
 	var result model.Groups
-	for _, g := range r.s.groups {
-		if g.ID() != gID {
+	for _, sg := range r.s.groups {
+		if sg.ID() != gID {
 			result = append(result, g)
 		}
 	}

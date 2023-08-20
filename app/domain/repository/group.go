@@ -19,7 +19,7 @@ type GroupRepositoryCommand interface {
 	GroupRepositoryQuery
 	Create(g *model.Group) (*model.Group, error)
 	Update(g *model.Group) error
-	Delete(gID model.GroupID) error
+	Delete(g *model.Group) error
 	AddUsers(gID model.GroupID, uIDs []model.UserID) error
 	RemoveUsers(gID model.GroupID, uIDs []model.UserID) error
 	RemoveUsersFromAll(uIDs []model.UserID) error
