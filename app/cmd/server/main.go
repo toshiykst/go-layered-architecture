@@ -16,11 +16,6 @@ import (
 )
 
 func main() {
-	e := echo.New()
-
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-
 	ctx := context.Background()
 
 	c, err := env.NewConfig()
@@ -44,6 +39,11 @@ func main() {
 
 	uuc := usecase.NewUserUsecase(db, uf, us, gs)
 	uh := handler.NewUserHandler(uuc)
+
+	e := echo.New()
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
 	e.POST("/users", uh.CreateUser)
 	e.GET("/users/:id", uh.GetUser)
 	e.GET("/users", uh.GetUsers)
