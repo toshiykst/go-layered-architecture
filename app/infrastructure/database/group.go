@@ -158,7 +158,7 @@ func (r *dbGroupRepository) RemoveUsers(gID model.GroupID, uIDs []model.UserID) 
 	return r.db.
 		Where("group_id = ?", gID).
 		Where("user_id IN (?)", uIDs).
-		Delete(&datamodel.Group{}).
+		Delete(&datamodel.GroupUser{}).
 		Error
 }
 
@@ -169,6 +169,6 @@ func (r *dbGroupRepository) RemoveUsersFromAll(uIDs []model.UserID) error {
 
 	return r.db.
 		Where("user_id IN (?)", uIDs).
-		Delete(&datamodel.Group{}).
+		Delete(&datamodel.GroupUser{}).
 		Error
 }

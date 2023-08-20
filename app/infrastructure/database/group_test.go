@@ -1001,7 +1001,7 @@ func TestDatabase_dbGroupRepository_RemoveUsers(t *testing.T) {
 
 			if tt.wantErr == nil || tt.dbErr != nil {
 				expectExec := mock.
-					ExpectExec(regexp.QuoteMeta("DELETE FROM `groups` WHERE group_id = ? AND user_id IN (?,?,?)")).
+					ExpectExec(regexp.QuoteMeta("DELETE FROM `group_users` WHERE group_id = ? AND user_id IN (?,?,?)")).
 					WithArgs(tt.args.gID, tt.args.uIDs[0], tt.args.uIDs[1], tt.args.uIDs[2])
 
 				if tt.wantErr != nil {
@@ -1089,7 +1089,7 @@ func TestDatabase_dbGroupRepository_RemoveUsersFromAll(t *testing.T) {
 
 			if tt.wantErr == nil || tt.dbErr != nil {
 				expectExec := mock.
-					ExpectExec(regexp.QuoteMeta("DELETE FROM `groups` WHERE user_id IN (?,?,?)")).
+					ExpectExec(regexp.QuoteMeta("DELETE FROM `group_users` WHERE user_id IN (?,?,?)")).
 					WithArgs(tt.args.uIDs[0], tt.args.uIDs[1], tt.args.uIDs[2])
 
 				if tt.wantErr != nil {
