@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrInvalidGroup = errors.New("invalid group id")
+	ErrInvalidGroup = errors.New("invalid group")
 )
 
 const (
