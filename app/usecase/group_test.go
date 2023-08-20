@@ -41,18 +41,13 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			wantErr: nil,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
-				)
 				r := memory.NewMemoryRepository(s)
 				return r
 			},
 			newMockFactory: func(ctrl *gomock.Controller) factory.GroupFactory {
 				f := mockfactory.NewMockGroupFactory(ctrl)
 				f.EXPECT().
-					Create("TEST_GROUP_NAME").
+					Create("TEST_GROUP_NAME", []model.UserID{}).
 					Return(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
 				return f
 			},
@@ -102,22 +97,23 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				return r
 			},
 			newMockFactory: func(ctrl *gomock.Controller) factory.GroupFactory {
+				uIDs := []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_3",
+				}
 				f := mockfactory.NewMockGroupFactory(ctrl)
 				f.EXPECT().
-					Create("TEST_GROUP_NAME").
-					Return(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
+					Create("TEST_GROUP_NAME", uIDs).
+					Return(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", uIDs), nil)
 				return f
 			},
 		},
 		{
 			name: "Returns error if any of group inputs are invalid",
 			in: &dto.CreateGroupInput{
-				Name: "TEST_GROUP_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-				UserIDs: []string{
-					"TEST_USER_ID_1",
-					"TEST_USER_ID_2",
-					"TEST_USER_ID_3",
-				},
+				Name:    "TEST_GROUP_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				UserIDs: []string{},
 			},
 			want:    nil,
 			wantErr: ErrInvalidGroupInput,
@@ -134,7 +130,7 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			newMockFactory: func(ctrl *gomock.Controller) factory.GroupFactory {
 				f := mockfactory.NewMockGroupFactory(ctrl)
 				f.EXPECT().
-					Create(gomock.Any()).
+					Create(gomock.Any(), gomock.Any()).
 					Return(nil, model.ErrInvalidGroup)
 				return f
 			},
@@ -162,10 +158,15 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				return r
 			},
 			newMockFactory: func(ctrl *gomock.Controller) factory.GroupFactory {
+				uIDs := []model.UserID{
+					"TEST_USER_ID_1",
+					"TEST_USER_ID_2",
+					"TEST_USER_ID_4",
+				}
 				f := mockfactory.NewMockGroupFactory(ctrl)
 				f.EXPECT().
-					Create("TEST_GROUP_NAME").
-					Return(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", []model.UserID{}), nil)
+					Create("TEST_GROUP_NAME", uIDs).
+					Return(model.MustNewGroup("TEST_GROUP_ID", "TEST_GROUP_NAME", uIDs), nil)
 				return f
 			},
 		},

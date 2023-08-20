@@ -38,8 +38,7 @@ func NewGroupUsecase(
 }
 
 func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupOutput, error) {
-	// TODO: Fix group factory to add args user ids
-	g, err := uc.f.Create(in.Name)
+	g, err := uc.f.Create(in.Name, dto.ToModelUserIDs(in.UserIDs))
 	if err != nil {
 		if errors.Is(err, model.ErrInvalidGroup) {
 			return nil, errors.Join(ErrInvalidGroupInput, err)
@@ -47,7 +46,7 @@ func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupO
 		return nil, err
 	}
 
-	uIDs := dto.ToModelUserIDs(in.UserIDs)
+	uIDs := g.UserIDs()
 	if len(uIDs) > 0 {
 		ok, err := uc.us.ExistsAll(uIDs)
 		if err != nil {
@@ -64,6 +63,7 @@ func (uc *groupUsecase) CreateGroup(in *dto.CreateGroupInput) (*dto.CreateGroupO
 			return err
 		}
 
+		// TODO: Remove below and add users in Group().Create(g)
 		if len(uIDs) > 0 {
 			if err = tx.Group().AddUsers(created.ID(), uIDs); err != nil {
 				return err

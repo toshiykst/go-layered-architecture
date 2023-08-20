@@ -35,16 +35,16 @@ func (m *MockGroupFactory) EXPECT() *MockGroupFactoryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockGroupFactory) Create(name string) (*model.Group, error) {
+func (m *MockGroupFactory) Create(name string, uIDs []model.UserID) (*model.Group, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", name)
+	ret := m.ctrl.Call(m, "Create", name, uIDs)
 	ret0, _ := ret[0].(*model.Group)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockGroupFactoryMockRecorder) Create(name interface{}) *gomock.Call {
+func (mr *MockGroupFactoryMockRecorder) Create(name, uIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockGroupFactory)(nil).Create), name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockGroupFactory)(nil).Create), name, uIDs)
 }
