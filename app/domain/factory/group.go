@@ -18,12 +18,12 @@ func NewGroupFactory() GroupFactory {
 }
 
 func (uf groupFactory) Create(name string, uIDs []model.UserID) (*model.Group, error) {
-	uuid, err := uuid.NewRandom()
+	generated, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
 
-	g, err := model.NewGroup(model.GroupID(uuid.String()), name, uIDs)
+	g, err := model.NewGroup(model.GroupID(generated.String()), name, uIDs)
 	if err != nil {
 		return nil, err
 	}

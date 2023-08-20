@@ -60,7 +60,7 @@ func TestUser_ToModel(t *testing.T) {
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
 			},
-			want: model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			want: model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
 		},
 		{
 			name: "Returns nil when the receiver is nil",
@@ -108,17 +108,17 @@ func TestUsers_ToModel(t *testing.T) {
 				},
 			},
 			want: model.Users{
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_1",
 					"TEST_USER_NAME_1",
 					"TEST_USER_EMAIL_1",
 				),
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_2",
 					"TEST_USER_NAME_2",
 					"TEST_USER_EMAIL_2",
 				),
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_3",
 					"TEST_USER_NAME_3",
 					"TEST_USER_EMAIL_3",

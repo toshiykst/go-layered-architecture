@@ -21,9 +21,9 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 		name                string
 		in                  *dto.CreateUserInput
 		want                *dto.CreateUserOutput
+		wantErr             error
 		newMemoryRepository func() repository.Repository
 		newMockFactory      func(ctrl *gomock.Controller) factory.UserFactory
-		wantErr             error
 	}{
 		{
 			name: "Creates a new user",
@@ -38,6 +38,7 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 					Email:  "TEST_USER_EMAIL",
 				},
 			},
+			wantErr: nil,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -47,7 +48,34 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 				f := mockfactory.NewMockUserFactory(ctrl)
 				f.EXPECT().
 					Create("TEST_USER_NAME", "TEST_USER_EMAIL").
-					Return(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"), nil)
+					Return(model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"), nil)
+				return f
+			},
+		},
+		{
+			name: "Returns error if any of user inputs are invalid",
+			in: &dto.CreateUserInput{
+				Name:  "TEST_USER_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				Email: "TEST_USER_EMAIL",
+			},
+			want: &dto.CreateUserOutput{
+				User: dto.User{
+					UserID: "TEST_USER_ID",
+					Name:   "TEST_USER_NAME",
+					Email:  "TEST_USER_EMAIL",
+				},
+			},
+			wantErr: ErrInvalidUserInput,
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
+				r := memory.NewMemoryRepository(s)
+				return r
+			},
+			newMockFactory: func(ctrl *gomock.Controller) factory.UserFactory {
+				f := mockfactory.NewMockUserFactory(ctrl)
+				f.EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(nil, model.ErrInvalidUser)
 				return f
 			},
 		},
@@ -64,14 +92,27 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 			uc := NewUserUsecase(r, tt.newMockFactory(ctrl), us, gs)
 
 			got, err := uc.CreateUser(tt.in)
-			if err != nil {
-				t.Fatalf("want no err, but has error %v", err)
-			}
-			if diff := cmp.Diff(got, tt.want); diff != "" {
-				t.Errorf(
-					"uc.CreateUser(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
-					tt.in, got, tt.want, diff,
-				)
+
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Error("want an error, but has no error")
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf(
+						"uc.CreateUser(%v)=_, %v; want _, %v",
+						tt.in, got, tt.wantErr,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no err, but has error %v", err)
+				}
+				if diff := cmp.Diff(got, tt.want); diff != "" {
+					t.Errorf(
+						"uc.CreateUser(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
+						tt.in, got, tt.want, diff,
+					)
+				}
 			}
 		})
 	}
@@ -100,7 +141,7 @@ func TestUserUsecase_GetUser(t *testing.T) {
 			wantErr: nil,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				s.AddUsers(model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
 				r := memory.NewMemoryRepository(s)
 				return r
 			},
@@ -191,9 +232,9 @@ func TestUserUsecase_GetUsers(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+					model.MustNewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.MustNewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.MustNewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
 				r := memory.NewMemoryRepository(s)
 				return r
@@ -253,14 +294,29 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 				Name:   "TEST_USER_NAME_UPDATED",
 				Email:  "TEST_USER_EMAIL_UPDATED",
 			},
-			wantUser: model.NewUser(
+			wantUser: model.MustNewUser(
 				"TEST_USER_ID",
 				"TEST_USER_NAME_UPDATED",
 				"TEST_USER_EMAIL_UPDATED",
 			),
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				s.AddUsers(model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				r := memory.NewMemoryRepository(s)
+				return r
+			},
+		},
+		{
+			name: "Returns error if any of user inputs are invalid",
+			in: &dto.UpdateUserInput{
+				UserID: "TEST_USER_ID",
+				Name:   "TEST_USER_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+				Email:  "TEST_USER_EMAIL_UPDATED",
+			},
+			wantUser: nil,
+			wantErr:  ErrInvalidUserInput,
+			newMemoryRepository: func() repository.Repository {
+				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
 				return r
 			},
@@ -335,7 +391,7 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 			},
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				s.AddUsers(model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
 				r := memory.NewMemoryRepository(s)
 				return r
 			},
@@ -347,7 +403,7 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 			},
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				s.AddUsers(model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
 				s.AddGroups(model.MustNewGroup(
 					"TEST_GROUP_ID_1",
 					"TEST_GROUP_NAME_1",

@@ -89,9 +89,9 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+					model.MustNewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.MustNewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.MustNewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
 				r := memory.NewMemoryRepository(s)
 				return r
@@ -120,9 +120,9 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+					model.MustNewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.MustNewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.MustNewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
 				r := memory.NewMemoryRepository(s)
 				return r
@@ -150,9 +150,9 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+					model.MustNewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.MustNewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.MustNewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
 				r := memory.NewMemoryRepository(s)
 				return r
@@ -257,9 +257,9 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 					}),
 				)
 				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+					model.MustNewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.MustNewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.MustNewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
 				r := memory.NewMemoryRepository(s)
 				return r
@@ -408,9 +408,9 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 					),
 				)
 				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+					model.MustNewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.MustNewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.MustNewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
 				r := memory.NewMemoryRepository(s)
 				return r

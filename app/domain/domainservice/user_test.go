@@ -22,7 +22,7 @@ func TestUserService_Exists(t *testing.T) {
 			want: true,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
-				s.AddUsers(model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
+				s.AddUsers(model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"))
 				r := memory.NewMemoryRepository(s)
 				return r
 			},
@@ -71,9 +71,9 @@ func TestUserService_ExistsAll(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+					model.MustNewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.MustNewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.MustNewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
 				r := memory.NewMemoryRepository(s)
 				return r
@@ -90,9 +90,9 @@ func TestUserService_ExistsAll(t *testing.T) {
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(
-					model.NewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
-					model.NewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
-					model.NewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
+					model.MustNewUser("TEST_USER_ID_1", "TEST_USER_NAME_1", "TEST_USER_EMAIL_1"),
+					model.MustNewUser("TEST_USER_ID_2", "TEST_USER_NAME_2", "TEST_USER_EMAIL_2"),
+					model.MustNewUser("TEST_USER_ID_3", "TEST_USER_NAME_3", "TEST_USER_EMAIL_3"),
 				)
 				r := memory.NewMemoryRepository(s)
 				return r

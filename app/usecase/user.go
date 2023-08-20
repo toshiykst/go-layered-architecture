@@ -2,6 +2,8 @@
 package usecase
 
 import (
+	"errors"
+
 	"github.com/labstack/gommon/log"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
@@ -38,6 +40,9 @@ func NewUserUsecase(
 func (uc *userUsecase) CreateUser(in *dto.CreateUserInput) (*dto.CreateUserOutput, error) {
 	u, err := uc.f.Create(in.Name, in.Email)
 	if err != nil {
+		if errors.Is(err, model.ErrInvalidUser) {
+			return nil, errors.Join(ErrInvalidUserInput, err)
+		}
 		return nil, err
 	}
 
@@ -93,7 +98,10 @@ func (uc *userUsecase) GetUsers(_ *dto.GetUsersInput) (*dto.GetUsersOutput, erro
 }
 
 func (uc *userUsecase) UpdateUser(in *dto.UpdateUserInput) (*dto.UpdateUserOutput, error) {
-	u := model.NewUser(model.UserID(in.UserID), in.Name, in.Email)
+	u, err := model.NewUser(model.UserID(in.UserID), in.Name, in.Email)
+	if err != nil {
+		return nil, errors.Join(ErrInvalidUserInput, err)
+	}
 
 	isExisted, err := uc.us.Exists(u.ID())
 	if err != nil {

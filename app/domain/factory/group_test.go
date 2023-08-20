@@ -82,13 +82,13 @@ func TestGroupFactory_Create(t *testing.T) {
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Fatalf(
-						"f.Create(%s, %v)=_, nil; want _, nil; want %s",
+						"f.Create(%s, %v)=_, nil; want _, %v",
 						tt.args.name, tt.args.uIDs, tt.wantErr,
 					)
 				}
 				if !errors.Is(err, tt.wantErr) {
 					t.Errorf(
-						"f.Create(%s, %v)=_, %t; want _, nil; want %v",
+						"f.Create(%s, %v)=_, %t; want _, %v",
 						tt.args.name, tt.args.uIDs, err, tt.wantErr,
 					)
 				}

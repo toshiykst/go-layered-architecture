@@ -26,7 +26,7 @@ func TestDatabase_dbUserRepository_Find(t *testing.T) {
 		{
 			name:    "Returns a user",
 			uID:     model.UserID("TEST_USER_ID"),
-			want:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			want:    model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
 			wantErr: nil,
 			dbErr:   nil,
 		},
@@ -111,17 +111,17 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 			name:   "Returns users",
 			filter: repository.UserListFilter{},
 			want: model.Users{
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_1",
 					"TEST_USER_NAME_1",
 					"TEST_USER_EMAIL_1",
 				),
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_2",
 					"TEST_USER_NAME_2",
 					"TEST_USER_EMAIL_2",
 				),
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_3",
 					"TEST_USER_NAME_3",
 					"TEST_USER_EMAIL_3",
@@ -140,12 +140,12 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 				},
 			},
 			want: model.Users{
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_1",
 					"TEST_USER_NAME_1",
 					"TEST_USER_EMAIL_1",
 				),
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_3",
 					"TEST_USER_NAME_3",
 					"TEST_USER_EMAIL_3",
@@ -228,13 +228,13 @@ func TestDatabase_dbUserRepository_Create(t *testing.T) {
 	}{
 		{
 			name:    "Creates a new user",
-			user:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
-			want:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			user:    model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			want:    model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
 			wantErr: nil,
 		},
 		{
 			name:    "Error",
-			user:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			user:    model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
 			want:    nil,
 			wantErr: errors.New("an error occurred"),
 		},
@@ -295,12 +295,12 @@ func TestDatabase_dbUserRepository_Update(t *testing.T) {
 	}{
 		{
 			name:    "Updates a user",
-			user:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			user:    model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
 			wantErr: nil,
 		},
 		{
 			name:    "Error",
-			user:    model.NewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
+			user:    model.MustNewUser("TEST_USER_ID", "TEST_USER_NAME", "TEST_USER_EMAIL"),
 			wantErr: errors.New("an error occurred"),
 		},
 	}

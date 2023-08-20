@@ -42,6 +42,9 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	}
 	out, err := h.uc.CreateUser(in)
 	if err != nil {
+		if errors.Is(err, usecase.ErrInvalidUserInput) {
+			return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
+		}
 		return response.ErrorInternal(c, err)
 	}
 
@@ -124,11 +127,13 @@ func (h *UserHandler) UpdateUser(c echo.Context) error {
 
 	_, err := h.uc.UpdateUser(in)
 	if err != nil {
+		if errors.Is(err, usecase.ErrInvalidUserInput) {
+			return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
+		}
 		if errors.Is(err, usecase.ErrUserNotFound) {
 			return response.Error(c, response.ErrorCodeUserNotFound, http.StatusNotFound, err)
-		} else {
-			return response.ErrorInternal(c, err)
 		}
+		return response.ErrorInternal(c, err)
 	}
 
 	return response.NoContent(c)

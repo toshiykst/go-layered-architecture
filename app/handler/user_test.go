@@ -78,6 +78,27 @@ func TestUserHandler_CreateUser(t *testing.T) {
 			wantErrRes: nil,
 		},
 		{
+			name: "Returns invalid arguments error response when group input is invalid",
+			req: &CreateUserRequest{
+				Name:  "TEST_USER_NAME",
+				Email: "TEST_USER_EMAIL",
+			},
+			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
+				uc := mockusecase.NewMockUserUsecase(ctrl)
+				uc.EXPECT().
+					CreateUser(gomock.Any()).
+					Return(nil, usecase.ErrInvalidUserInput)
+				return uc
+			},
+			wantStatus: http.StatusBadRequest,
+			wantRes:    nil,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInvalidArguments,
+				Status:  http.StatusBadRequest,
+				Message: usecase.ErrInvalidUserInput.Error(),
+			},
+		},
+		{
 			name: "Returns internal server error response",
 			req: &CreateUserRequest{
 				Name:  "TEST_USER_NAME",
@@ -487,6 +508,23 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 			},
 			wantStatus: http.StatusNoContent,
 			wantErrRes: nil,
+		},
+		{
+			name: "Returns invalid arguments error response when group input is invalid",
+			uID:  "TEST_USER_ID",
+			newUserUsecase: func(ctrl *gomock.Controller) usecase.UserUsecase {
+				uc := mockusecase.NewMockUserUsecase(ctrl)
+				uc.EXPECT().
+					UpdateUser(gomock.Any()).
+					Return(nil, usecase.ErrInvalidUserInput)
+				return uc
+			},
+			wantStatus: http.StatusBadRequest,
+			wantErrRes: &response.ErrorResponse{
+				Code:    response.ErrorCodeInvalidArguments,
+				Status:  http.StatusBadRequest,
+				Message: usecase.ErrInvalidUserInput.Error(),
+			},
 		},
 		{
 			name: "Returns user not found error response",

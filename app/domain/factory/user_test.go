@@ -2,6 +2,7 @@ package factory
 
 import (
 	"errors"
+	"io"
 	"strings"
 	"testing"
 
@@ -12,40 +13,88 @@ import (
 )
 
 func TestUserFactory_Create(t *testing.T) {
-	uID := model.UserID("61626364-6566-4768-b132-333435363738")
-	name := "TEST_USER_NAME"
-	email := "TEST_USER_EMAIL"
-	uuid.SetRand(strings.NewReader("abcdefgh12345678"))
-
-	want := model.NewUser(uID, name, email)
-	f := NewUserFactory()
-
-	got, err := f.Create(name, email)
-	if err != nil {
-		t.Fatalf("want no error, but has error %v", err)
+	type args struct {
+		name  string
+		email string
 	}
-	if diff := cmp.Diff(got, want, cmp.AllowUnexported(model.User{})); diff != "" {
-		t.Errorf(
-			"f.Create(%s, %s)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
-			name, email, got, want, diff,
-		)
+	tests := []struct {
+		name    string
+		args    args
+		setup   func()
+		want    *model.User
+		wantErr error
+	}{
+		{
+			name: "Returns group",
+			args: args{
+				name:  "TEST_GROUP_NAME",
+				email: "TEST_USER_EMAIL",
+			},
+			setup: func() {
+				uuid.SetRand(strings.NewReader("abcdefgh12345678"))
+			},
+			want: model.MustNewUser(
+				"61626364-6566-4768-b132-333435363738",
+				"TEST_GROUP_NAME",
+				"TEST_USER_EMAIL",
+			),
+			wantErr: nil,
+		},
+		{
+			name: "Error creating uuid",
+			args: args{
+				name:  "TEST_USER_NAME",
+				email: "TEST_USER_EMAIL",
+			},
+			setup: func() {
+				uuid.SetRand(strings.NewReader("0"))
+			},
+			want:    nil,
+			wantErr: io.ErrUnexpectedEOF,
+		},
+		{
+			name: "Error invalid user input",
+			args: args{
+				name:  "TEST_USER_NAME_XXXXXXXXXXXXXXXXXXXXXXXXX",
+				email: "TEST_USER_EMAIL",
+			},
+			setup: func() {
+				uuid.SetRand(strings.NewReader("abcdefgh12345678"))
+			},
+			want:    nil,
+			wantErr: model.ErrInvalidUser,
+		},
 	}
-}
 
-func TestUserFactory_Create_Error_UUID(t *testing.T) {
-	wantErr := errors.New("unexpected EOF")
-
-	name := "TEST_USER_NAME"
-	email := "TEST_USER_EMAIL"
-	uuid.SetRand(strings.NewReader("0"))
-
-	f := NewUserFactory()
-
-	_, err := f.Create(name, email)
-	if err == nil {
-		t.Fatalf("f.Create(%s, %s)=_, nil; want _, nil; want %s", name, email, wantErr)
-	}
-	if err.Error() != wantErr.Error() {
-		t.Errorf("f.Create(%s, %s)=_, %v; want _, nil; want %s", name, email, err, wantErr)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.setup()
+			f := NewUserFactory()
+			got, err := f.Create(tt.args.name, tt.args.email)
+			if tt.wantErr != nil {
+				if err == nil {
+					t.Fatalf(
+						"f.Create(%s, %s)=_, nil; want _, %v",
+						tt.args.name, tt.args.email, tt.wantErr,
+					)
+				}
+				if !errors.Is(err, tt.wantErr) {
+					t.Errorf(
+						"f.Create(%s, %s)=_, %v; want _, %v",
+						tt.args.name, tt.args.email, err, tt.wantErr,
+					)
+				}
+			} else {
+				if err != nil {
+					t.Fatalf("want no error, but has error %v", err)
+				}
+				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(model.User{})); diff != "" {
+					t.Errorf(
+						"f.Create(%s, %s)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
+						tt.args.name, tt.args.email, got, tt.want, diff,
+					)
+				}
+			}
+		})
 	}
 }

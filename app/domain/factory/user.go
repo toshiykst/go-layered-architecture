@@ -18,10 +18,15 @@ func NewUserFactory() UserFactory {
 }
 
 func (uf userFactory) Create(name, email string) (*model.User, error) {
-	uuid, err := uuid.NewRandom()
+	generated, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
 	}
 
-	return model.NewUser(model.UserID(uuid.String()), name, email), nil
+	u, err := model.NewUser(model.UserID(generated.String()), name, email)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }

@@ -17,17 +17,17 @@ func TestToUsersFromModel(t *testing.T) {
 		{
 			name: "Convert model users to dto users",
 			us: model.Users{
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_1",
 					"TEST_USER_NAME_1",
 					"TEST_USER_EMAIL_1",
 				),
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_2",
 					"TEST_USER_NAME_2",
 					"TEST_USER_EMAIL_2",
 				),
-				model.NewUser(
+				model.MustNewUser(
 					"TEST_USER_ID_3",
 					"TEST_USER_NAME_3",
 					"TEST_USER_EMAIL_3",

@@ -142,11 +142,11 @@ func (h *GroupHandler) UpdateGroup(c echo.Context) error {
 
 	_, err := h.uc.UpdateGroup(in)
 	if err != nil {
-		if errors.Is(err, usecase.ErrGroupNotFound) {
-			return response.Error(c, response.ErrorCodeGroupNotFound, http.StatusNotFound, err)
-		}
 		if errors.Is(err, usecase.ErrInvalidGroupInput) {
 			return response.Error(c, response.ErrorCodeInvalidArguments, http.StatusBadRequest, err)
+		}
+		if errors.Is(err, usecase.ErrGroupNotFound) {
+			return response.Error(c, response.ErrorCodeGroupNotFound, http.StatusNotFound, err)
 		}
 		return response.ErrorInternal(c, err)
 

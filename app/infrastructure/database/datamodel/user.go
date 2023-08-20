@@ -20,7 +20,7 @@ func (u *User) ToModel() *model.User {
 	if u == nil {
 		return nil
 	}
-	return model.NewUser(
+	return model.MustNewUser(
 		model.UserID(u.ID),
 		u.Name,
 		u.Email,
@@ -35,7 +35,7 @@ func (us Users) ToModel() model.Users {
 	}
 	mus := make(model.Users, len(us))
 	for i, u := range us {
-		mus[i] = model.NewUser(
+		mus[i] = model.MustNewUser(
 			model.UserID(u.ID),
 			u.Name,
 			u.Email,
