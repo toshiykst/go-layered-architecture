@@ -1,4 +1,4 @@
-package datamodel
+package datamodel_test
 
 import (
 	"testing"
@@ -6,6 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database/datamodel"
 )
 
 func TestNewUser(t *testing.T) {
@@ -17,7 +18,7 @@ func TestNewUser(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *User
+		want *datamodel.User
 	}{
 		{
 			name: "Creates a datamodel user",
@@ -26,7 +27,7 @@ func TestNewUser(t *testing.T) {
 				name:  "TEST_USER_NAME",
 				email: "TEST_USER_EMAIL",
 			},
-			want: &User{
+			want: &datamodel.User{
 				ID:    "TEST_USER_ID",
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
@@ -36,7 +37,7 @@ func TestNewUser(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewUser(tt.args.id, tt.args.name, tt.args.email)
+			got := datamodel.NewUser(tt.args.id, tt.args.name, tt.args.email)
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf(
 					"TestNewUser(%s, %s, %s)=%v; want %v\ndiffers: (-got +want)\n%s",
@@ -50,12 +51,12 @@ func TestNewUser(t *testing.T) {
 func TestUser_ToModel(t *testing.T) {
 	tests := []struct {
 		name string
-		user *User
+		user *datamodel.User
 		want *model.User
 	}{
 		{
 			name: "Convert to model.User",
-			user: &User{
+			user: &datamodel.User{
 				ID:    "TEST_USER_ID",
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
@@ -85,12 +86,12 @@ func TestUser_ToModel(t *testing.T) {
 func TestUsers_ToModel(t *testing.T) {
 	tests := []struct {
 		name  string
-		users Users
+		users datamodel.Users
 		want  model.Users
 	}{
 		{
 			name: "Convert to model.User slice",
-			users: Users{
+			users: datamodel.Users{
 				{
 					ID:    "TEST_USER_ID_1",
 					Name:  "TEST_USER_NAME_1",

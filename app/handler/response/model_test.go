@@ -1,10 +1,11 @@
-package response
+package response_test
 
 import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 
+	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
@@ -12,7 +13,7 @@ func TestToUsersFromDTO(t *testing.T) {
 	tests := []struct {
 		name  string
 		dtous []dto.User
-		want  []User
+		want  []response.User
 	}{
 		{
 			name: "Returns response users",
@@ -33,7 +34,7 @@ func TestToUsersFromDTO(t *testing.T) {
 					Email:  "TEST_USER_EMAIL_3",
 				},
 			},
-			want: []User{
+			want: []response.User{
 				{
 					UserID: "TEST_USER_ID_1",
 					Name:   "TEST_USER_NAME_1",
@@ -55,10 +56,10 @@ func TestToUsersFromDTO(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ToUsersFromDTO(tt.dtous)
+			got := response.ToUsersFromDTO(tt.dtous)
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf(
-					"ToUsersFromDTO(%v)=%v; want %v\ndiffers: (-got +want)\n%s",
+					"response.ToUsersFromDTO(%v)=%v; want %v\ndiffers: (-got +want)\n%s",
 					tt.dtous, got, tt.want, diff,
 				)
 			}

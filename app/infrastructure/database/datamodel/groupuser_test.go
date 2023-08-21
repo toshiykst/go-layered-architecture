@@ -1,4 +1,4 @@
-package datamodel
+package datamodel_test
 
 import (
 	"testing"
@@ -6,6 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database/datamodel"
 )
 
 func TestNewGroupUser(t *testing.T) {
@@ -16,7 +17,7 @@ func TestNewGroupUser(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *GroupUser
+		want *datamodel.GroupUser
 	}{
 		{
 			name: "Creates a datamodel groupuser",
@@ -24,7 +25,7 @@ func TestNewGroupUser(t *testing.T) {
 				gID: model.GroupID("TEST_GROUP_ID"),
 				uID: model.UserID("TEST_USER_ID"),
 			},
-			want: &GroupUser{
+			want: &datamodel.GroupUser{
 				GroupID: "TEST_GROUP_ID",
 				UserID:  "TEST_USER_ID",
 			},
@@ -32,7 +33,7 @@ func TestNewGroupUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewGroupUser(tt.args.gID, tt.args.uID)
+			got := datamodel.NewGroupUser(tt.args.gID, tt.args.uID)
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf(
 					"NewGroupUser(%s,%s)=%v; want %v\ndiffers: (-got +want)\n%s",
@@ -51,7 +52,7 @@ func TestNewGroupUsers(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want GroupUsers
+		want datamodel.GroupUsers
 	}{
 		{
 			name: "Creates a datamodel groupusers",
@@ -63,7 +64,7 @@ func TestNewGroupUsers(t *testing.T) {
 					"TEST_USER_ID_3",
 				},
 			},
-			want: GroupUsers{
+			want: datamodel.GroupUsers{
 				{
 					GroupID: "TEST_GROUP_ID",
 					UserID:  "TEST_USER_ID_1",
@@ -82,7 +83,7 @@ func TestNewGroupUsers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewGroupUsers(tt.args.gID, tt.args.uIDs)
+			got := datamodel.NewGroupUsers(tt.args.gID, tt.args.uIDs)
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf(
 					"NewGroupUsers(%s,%v)=%v; want %v\ndiffers: (-got +want)\n%s",
@@ -96,12 +97,12 @@ func TestNewGroupUsers(t *testing.T) {
 func TestGroupUsers_GroupIDs(t *testing.T) {
 	tests := []struct {
 		name string
-		gus  GroupUsers
+		gus  datamodel.GroupUsers
 		want []string
 	}{
 		{
 			name: "Returns unique group ids",
-			gus: GroupUsers{
+			gus: datamodel.GroupUsers{
 				{
 					GroupID: "TEST_GROUP_ID_1",
 					UserID:  "TEST_USER_ID_1",
@@ -143,12 +144,12 @@ func TestGroupUsers_GroupIDs(t *testing.T) {
 func TestGroupUsers_ModelUserIDs(t *testing.T) {
 	tests := []struct {
 		name string
-		gus  GroupUsers
+		gus  datamodel.GroupUsers
 		want []model.UserID
 	}{
 		{
 			name: "Returns user ids",
-			gus: GroupUsers{
+			gus: datamodel.GroupUsers{
 				{
 					GroupID: "TEST_GROUP_ID",
 					UserID:  "TEST_USER_ID_1",
@@ -186,12 +187,12 @@ func TestGroupUsers_ModelUserIDs(t *testing.T) {
 func TestGroupUsers_ModelUserIDsByGroupID(t *testing.T) {
 	tests := []struct {
 		name string
-		gus  GroupUsers
+		gus  datamodel.GroupUsers
 		want map[string][]model.UserID
 	}{
 		{
 			name: "Returns map of group ids by user id",
-			gus: GroupUsers{
+			gus: datamodel.GroupUsers{
 				{
 					GroupID: "TEST_GROUP_ID_1",
 					UserID:  "TEST_USER_ID_1",

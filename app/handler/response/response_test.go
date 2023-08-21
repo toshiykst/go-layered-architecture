@@ -1,4 +1,4 @@
-package response
+package response_test
 
 import (
 	"io"
@@ -8,6 +8,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/labstack/echo"
+
+	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 )
 
 func TestOK(t *testing.T) {
@@ -39,7 +41,7 @@ func TestOK(t *testing.T) {
 
 			c := e.NewContext(req, rec)
 
-			if err := OK(c, tt.body); err != nil {
+			if err := response.OK(c, tt.body); err != nil {
 				t.Fatalf("want no err, but has error: %s", err.Error())
 			}
 
@@ -102,7 +104,7 @@ func TestCreated(t *testing.T) {
 
 			c := e.NewContext(req, rec)
 
-			if err := Created(c, tt.body); err != nil {
+			if err := response.Created(c, tt.body); err != nil {
 				t.Fatalf("want no err, but has error: %s", err.Error())
 			}
 
@@ -157,7 +159,7 @@ func TestNoContent(t *testing.T) {
 
 			c := e.NewContext(req, rec)
 
-			if err := NoContent(c); err != nil {
+			if err := response.NoContent(c); err != nil {
 				t.Fatalf("want no err, but has error: %s", err.Error())
 			}
 

@@ -1,8 +1,9 @@
-package domainservice
+package domainservice_test
 
 import (
 	"testing"
 
+	"github.com/toshiykst/go-layerd-architecture/app/domain/domainservice"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/memory"
@@ -40,7 +41,7 @@ func TestGroupService_Exists(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gs := &groupService{r: tt.newMemoryRepository()}
+			gs := domainservice.NewGroupService(tt.newMemoryRepository())
 			got, err := gs.Exists(tt.gID)
 			if err != nil {
 				t.Fatalf("want no error, but has error %v", err)
@@ -97,7 +98,7 @@ func TestGroupService_HasUsersAny(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gs := &groupService{r: tt.newMemoryRepository()}
+			gs := domainservice.NewGroupService(tt.newMemoryRepository())
 			got, err := gs.HasUsersAny(tt.uIDs)
 			if err != nil {
 				t.Fatalf("want no error, but has error %v", err)

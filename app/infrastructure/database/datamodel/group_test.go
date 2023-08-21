@@ -1,4 +1,4 @@
-package datamodel
+package datamodel_test
 
 import (
 	"testing"
@@ -6,6 +6,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
+	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database/datamodel"
 )
 
 func TestNewGroup(t *testing.T) {
@@ -16,7 +17,7 @@ func TestNewGroup(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *Group
+		want *datamodel.Group
 	}{
 		{
 			name: "Creates a datamodel user",
@@ -24,7 +25,7 @@ func TestNewGroup(t *testing.T) {
 				id:   model.GroupID("TEST_GROUP_ID"),
 				name: "TEST_GROUP_NAME",
 			},
-			want: &Group{
+			want: &datamodel.Group{
 				ID:   "TEST_GROUP_ID",
 				Name: "TEST_GROUP_NAME",
 			},
@@ -33,7 +34,7 @@ func TestNewGroup(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := NewGroup(tt.args.id, tt.args.name)
+			got := datamodel.NewGroup(tt.args.id, tt.args.name)
 			if diff := cmp.Diff(got, tt.want); diff != "" {
 				t.Errorf(
 					"NewGroup(%s,%s)=%v; want %v\ndiffers: (-got +want)\n%s",
@@ -46,22 +47,22 @@ func TestNewGroup(t *testing.T) {
 
 func TestGroup_ToModel(t *testing.T) {
 	type args struct {
-		gus GroupUsers
+		gus datamodel.GroupUsers
 	}
 	tests := []struct {
 		name  string
-		group *Group
+		group *datamodel.Group
 		args  args
 		want  *model.Group
 	}{
 		{
 			name: "Convert to model.Group",
-			group: &Group{
+			group: &datamodel.Group{
 				ID:   "TEST_GROUP_ID",
 				Name: "TEST_GROUP_NAME",
 			},
 			args: args{
-				gus: GroupUsers{
+				gus: datamodel.GroupUsers{
 					{
 						GroupID: "TEST_GROUP_ID",
 						UserID:  "TEST_USER_ID_1",
@@ -109,12 +110,12 @@ func TestGroup_ToModel(t *testing.T) {
 func TestGroups_IDs(t *testing.T) {
 	tests := []struct {
 		name   string
-		groups Groups
+		groups datamodel.Groups
 		want   []string
 	}{
 		{
 			name: "Returns group ids",
-			groups: Groups{
+			groups: datamodel.Groups{
 				{
 					ID:   "TEST_GROUP_ID_1",
 					Name: "TEST_GROUP_NAME_1",
@@ -156,17 +157,17 @@ func TestGroups_IDs(t *testing.T) {
 
 func TestGroups_ToModel(t *testing.T) {
 	type args struct {
-		gus GroupUsers
+		gus datamodel.GroupUsers
 	}
 	tests := []struct {
 		name   string
-		groups Groups
+		groups datamodel.Groups
 		args   args
 		want   model.Groups
 	}{
 		{
 			name: "Convert to model.Groups",
-			groups: Groups{
+			groups: datamodel.Groups{
 				{
 					ID:   "TEST_GROUP_ID_1",
 					Name: "TEST_GROUP_NAME_1",
@@ -181,7 +182,7 @@ func TestGroups_ToModel(t *testing.T) {
 				},
 			},
 			args: args{
-				gus: GroupUsers{
+				gus: datamodel.GroupUsers{
 					{
 						GroupID: "TEST_GROUP_ID_1",
 						UserID:  "TEST_USER_ID_1",
@@ -217,7 +218,7 @@ func TestGroups_ToModel(t *testing.T) {
 		{
 			name: "Returns nil when the receiver is nil",
 			args: args{
-				gus: GroupUsers{},
+				gus: datamodel.GroupUsers{},
 			},
 			groups: nil,
 			want:   nil,

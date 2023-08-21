@@ -1,4 +1,4 @@
-package testutil
+package database_test
 
 import (
 	"database/sql/driver"
@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func DBMock(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
+func dbMock(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
 	t.Helper()
 
 	db, mock, err := sqlmock.New()
@@ -38,7 +38,7 @@ func DBMock(t *testing.T) (sqlmock.Sqlmock, *gorm.DB) {
 	return mock, gormDB
 }
 
-func ToDriverValues[T any](t *testing.T, v ...T) []driver.Value {
+func toDriverValues[T any](t *testing.T, v ...T) []driver.Value {
 	t.Helper()
 	result := make([]driver.Value, len(v))
 	for i, e := range v {

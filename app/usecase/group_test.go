@@ -1,4 +1,4 @@
-package usecase
+package usecase_test
 
 import (
 	"errors"
@@ -13,6 +13,7 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/memory"
 	mockfactory "github.com/toshiykst/go-layerd-architecture/app/mock/domain/factory"
+	"github.com/toshiykst/go-layerd-architecture/app/usecase"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
@@ -116,7 +117,7 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				UserIDs: []string{},
 			},
 			want:    nil,
-			wantErr: ErrInvalidGroupInput,
+			wantErr: usecase.ErrInvalidGroupInput,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(
@@ -146,7 +147,7 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 				},
 			},
 			want:    nil,
-			wantErr: ErrInvalidUserIDs,
+			wantErr: usecase.ErrInvalidUserIDs,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				s.AddUsers(
@@ -180,7 +181,7 @@ func TestGroupUsecase_CreateGroup(t *testing.T) {
 			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
-			uc := NewGroupUsecase(r, tt.newMockFactory(ctrl), gs, us)
+			uc := usecase.NewGroupUsecase(r, tt.newMockFactory(ctrl), gs, us)
 
 			got, err := uc.CreateGroup(tt.in)
 			if tt.wantErr != nil {
@@ -271,7 +272,7 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 				GroupID: "TEST_GROUP_ID",
 			},
 			want:    nil,
-			wantErr: ErrGroupNotFound,
+			wantErr: usecase.ErrGroupNotFound,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -288,7 +289,7 @@ func TestGroupUsecase_GetGroup(t *testing.T) {
 			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
-			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), gs, us)
+			uc := usecase.NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), gs, us)
 
 			got, err := uc.GetGroup(tt.in)
 			if tt.wantErr != nil {
@@ -483,7 +484,7 @@ func TestGroupUsecase_GetGroups(t *testing.T) {
 			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
-			uc := NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), gs, us)
+			uc := usecase.NewGroupUsecase(r, mockfactory.NewMockGroupFactory(ctrl), gs, us)
 
 			in := &dto.GetGroupsInput{}
 			got, err := uc.GetGroups(in)
@@ -549,7 +550,7 @@ func TestGroupUsecase_UpdateGroup(t *testing.T) {
 				Name:    "TEST_GROUP_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 			},
 			wantGroup: nil,
-			wantErr:   ErrInvalidGroupInput,
+			wantErr:   usecase.ErrInvalidGroupInput,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -563,7 +564,7 @@ func TestGroupUsecase_UpdateGroup(t *testing.T) {
 				Name:    "TEST_GROUP_NAME_UPDATED",
 			},
 			wantGroup: nil,
-			wantErr:   ErrGroupNotFound,
+			wantErr:   usecase.ErrGroupNotFound,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -581,7 +582,7 @@ func TestGroupUsecase_UpdateGroup(t *testing.T) {
 			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
-			uc := NewGroupUsecase(r, f, gs, us)
+			uc := usecase.NewGroupUsecase(r, f, gs, us)
 
 			_, err := uc.UpdateGroup(tt.in)
 			if tt.wantErr != nil {
@@ -659,7 +660,7 @@ func TestGroupUsecase_DeleteGroup(t *testing.T) {
 			in: &dto.DeleteGroupInput{
 				GroupID: "TEST_GROUP_ID",
 			},
-			wantErr: ErrGroupNotFound,
+			wantErr: usecase.ErrGroupNotFound,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -677,7 +678,7 @@ func TestGroupUsecase_DeleteGroup(t *testing.T) {
 			r := tt.newMemoryRepository()
 			gs := domainservice.NewGroupService(r)
 			us := domainservice.NewUserService(r)
-			uc := NewGroupUsecase(r, f, gs, us)
+			uc := usecase.NewGroupUsecase(r, f, gs, us)
 
 			_, err := uc.DeleteGroup(tt.in)
 			if tt.wantErr != nil {

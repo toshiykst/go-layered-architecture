@@ -1,4 +1,4 @@
-package response
+package response_test
 
 import (
 	"errors"
@@ -9,11 +9,13 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/labstack/echo"
+
+	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 )
 
 func TestError(t *testing.T) {
 	type args struct {
-		code   ErrorCode
+		code   response.ErrorCode
 		status int
 		err    error
 	}
@@ -25,7 +27,7 @@ func TestError(t *testing.T) {
 		{
 			name: "Respond with http status in arg and error response body",
 			args: args{
-				code:   ErrorCodeInvalidArguments,
+				code:   response.ErrorCodeInvalidArguments,
 				status: http.StatusBadRequest,
 				err:    errors.New("an error occurred"),
 			},
@@ -45,8 +47,8 @@ func TestError(t *testing.T) {
 
 			c := e.NewContext(req, rec)
 
-			if err := Error(c, tt.args.code, tt.args.status, tt.args.err); err != nil {
-				t.Fatalf("want no err, but has error: %s", err.Error())
+			if err := response.Error(c, tt.args.code, tt.args.status, tt.args.err); err != nil {
+				t.Fatalf("want no error, but has error: %s", err.Error())
 			}
 
 			res := rec.Result()
@@ -109,8 +111,8 @@ func TestErrorInternal(t *testing.T) {
 
 			c := e.NewContext(req, rec)
 
-			if err := ErrorInternal(c, tt.args.err); err != nil {
-				t.Fatalf("want no err, but has error: %s", err.Error())
+			if err := response.ErrorInternal(c, tt.args.err); err != nil {
+				t.Fatalf("want no error, but has error: %s", err.Error())
 			}
 
 			res := rec.Result()

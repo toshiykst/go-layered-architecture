@@ -1,4 +1,4 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
@@ -11,44 +11,28 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/labstack/echo"
 	"go.uber.org/mock/gomock"
 
+	"github.com/toshiykst/go-layerd-architecture/app/handler"
 	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 	mockusecase "github.com/toshiykst/go-layerd-architecture/app/mock/usecase"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
-func TestNewGroupHandler(t *testing.T) {
-	t.Run("Returns a group handler instance", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		uc := mockusecase.NewMockGroupUsecase(ctrl)
-		got := NewGroupHandler(uc)
-		want := &GroupHandler{uc: uc}
-		if diff := cmp.Diff(got, want, cmpopts.IgnoreUnexported(GroupHandler{})); diff != "" {
-			t.Errorf(
-				"NewGroupHandler(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
-				uc, got, want, diff,
-			)
-		}
-	})
-}
-
 func TestGroupHandler_CreateGroup(t *testing.T) {
 	tests := []struct {
 		name            string
-		req             *CreateGroupRequest
+		req             *handler.CreateGroupRequest
 		newGroupUsecase func(ctrl *gomock.Controller) usecase.GroupUsecase
 		wantStatus      int
-		wantRes         *CreateGroupResponse
+		wantRes         *handler.CreateGroupResponse
 		wantErrRes      *response.ErrorResponse
 	}{
 		{
 			name: "Create a group and returns the group response with no users",
-			req: &CreateGroupRequest{
+			req: &handler.CreateGroupRequest{
 				Name:    "TEST_GROUP_NAME",
 				UserIDs: nil,
 			},
@@ -68,7 +52,7 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 				return uc
 			},
 			wantStatus: http.StatusCreated,
-			wantRes: &CreateGroupResponse{
+			wantRes: &handler.CreateGroupResponse{
 				Group: response.Group{
 					GroupID: "TEST_GROUP_ID",
 					Name:    "TEST_GROUP_NAME",
@@ -79,7 +63,7 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 		},
 		{
 			name: "Create a group and returns the group response with users",
-			req: &CreateGroupRequest{
+			req: &handler.CreateGroupRequest{
 				Name: "TEST_GROUP_NAME",
 				UserIDs: []string{
 					"TEST_USER_ID_1",
@@ -119,7 +103,7 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 				return uc
 			},
 			wantStatus: http.StatusCreated,
-			wantRes: &CreateGroupResponse{
+			wantRes: &handler.CreateGroupResponse{
 				Group: response.Group{
 					GroupID: "TEST_GROUP_ID",
 					Name:    "TEST_GROUP_NAME",
@@ -146,7 +130,7 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 		},
 		{
 			name: "Returns invalid arguments error response when group input is invalid",
-			req: &CreateGroupRequest{
+			req: &handler.CreateGroupRequest{
 				Name: "TEST_GROUP_NAME_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
 				UserIDs: []string{
 					"TEST_USER_ID_1",
@@ -171,7 +155,7 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 		},
 		{
 			name: "Returns invalid arguments error response when some of user ids are invalid",
-			req: &CreateGroupRequest{
+			req: &handler.CreateGroupRequest{
 				Name: "TEST_GROUP_NAME",
 				UserIDs: []string{
 					"TEST_USER_ID_1",
@@ -196,7 +180,7 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 		},
 		{
 			name: "Returns internal server error response",
-			req: &CreateGroupRequest{
+			req: &handler.CreateGroupRequest{
 				Name:    "TEST_GROUP_NAME",
 				UserIDs: nil,
 			},
@@ -236,7 +220,7 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newGroupUsecase(ctrl)
 
-			h := NewGroupHandler(uc)
+			h := handler.NewGroupHandler(uc)
 
 			err := h.CreateGroup(c)
 			if err != nil {
@@ -262,7 +246,7 @@ func TestGroupHandler_CreateGroup(t *testing.T) {
 			}(res.Body)
 
 			if tt.wantRes != nil {
-				var got *CreateGroupResponse
+				var got *handler.CreateGroupResponse
 				_ = json.Unmarshal(resBody, &got)
 				if diff := cmp.Diff(got, tt.wantRes); diff != "" {
 					t.Errorf(
@@ -292,7 +276,7 @@ func TestGroupHandler_GetGroup(t *testing.T) {
 		id              string
 		newGroupUsecase func(ctrl *gomock.Controller) usecase.GroupUsecase
 		wantStatus      int
-		wantRes         *GetGroupResponse
+		wantRes         *handler.GetGroupResponse
 		wantErrRes      *response.ErrorResponse
 	}{
 		{
@@ -330,7 +314,7 @@ func TestGroupHandler_GetGroup(t *testing.T) {
 				return uc
 			},
 			wantStatus: http.StatusOK,
-			wantRes: &GetGroupResponse{
+			wantRes: &handler.GetGroupResponse{
 				Group: response.Group{
 					GroupID: "TEST_GROUP_ID",
 					Name:    "TEST_GROUP_NAME",
@@ -413,7 +397,7 @@ func TestGroupHandler_GetGroup(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newGroupUsecase(ctrl)
 
-			h := NewGroupHandler(uc)
+			h := handler.NewGroupHandler(uc)
 
 			err := h.GetGroup(c)
 			if err != nil {
@@ -439,7 +423,7 @@ func TestGroupHandler_GetGroup(t *testing.T) {
 			}(res.Body)
 
 			if tt.wantRes != nil {
-				var got *GetGroupResponse
+				var got *handler.GetGroupResponse
 				_ = json.Unmarshal(resBody, &got)
 				if diff := cmp.Diff(got, tt.wantRes); diff != "" {
 					t.Errorf(
@@ -468,7 +452,7 @@ func TestGroupHandler_GetGroups(t *testing.T) {
 		name            string
 		newGroupUsecase func(ctrl *gomock.Controller) usecase.GroupUsecase
 		wantStatus      int
-		wantRes         *GetGroupsResponse
+		wantRes         *handler.GetGroupsResponse
 		wantErrRes      *response.ErrorResponse
 	}{
 		{
@@ -534,7 +518,7 @@ func TestGroupHandler_GetGroups(t *testing.T) {
 				return uc
 			},
 			wantStatus: http.StatusOK,
-			wantRes: &GetGroupsResponse{
+			wantRes: &handler.GetGroupsResponse{
 				Groups: []response.Group{
 					{
 						GroupID: "TEST_GROUP_ID_1",
@@ -625,7 +609,7 @@ func TestGroupHandler_GetGroups(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newGroupUsecase(ctrl)
 
-			h := NewGroupHandler(uc)
+			h := handler.NewGroupHandler(uc)
 
 			err := h.GetGroups(c)
 			if err != nil {
@@ -651,7 +635,7 @@ func TestGroupHandler_GetGroups(t *testing.T) {
 			}(res.Body)
 
 			if tt.wantRes != nil {
-				var got *GetGroupsResponse
+				var got *handler.GetGroupsResponse
 				_ = json.Unmarshal(resBody, &got)
 				if diff := cmp.Diff(got, tt.wantRes); diff != "" {
 					t.Errorf(
@@ -679,7 +663,7 @@ func TestGroupHandler_UpdateGroup(t *testing.T) {
 	tests := []struct {
 		name            string
 		gID             string
-		req             *UpdateGroupRequest
+		req             *handler.UpdateGroupRequest
 		newGroupUsecase func(ctrl *gomock.Controller) usecase.GroupUsecase
 		wantStatus      int
 		wantErrRes      *response.ErrorResponse
@@ -687,7 +671,7 @@ func TestGroupHandler_UpdateGroup(t *testing.T) {
 		{
 			name: "Update a group",
 			gID:  "TEST_GROUP_ID",
-			req: &UpdateGroupRequest{
+			req: &handler.UpdateGroupRequest{
 				Name: "TEST_GROUP_NAME",
 			},
 			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
@@ -756,7 +740,7 @@ func TestGroupHandler_UpdateGroup(t *testing.T) {
 		{
 			name: "Returns internal server error response",
 			gID:  "TEST_GROUP_ID",
-			req: &UpdateGroupRequest{
+			req: &handler.UpdateGroupRequest{
 				Name: "TEST_GROUP_NAME",
 			},
 			newGroupUsecase: func(ctrl *gomock.Controller) usecase.GroupUsecase {
@@ -794,7 +778,7 @@ func TestGroupHandler_UpdateGroup(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newGroupUsecase(ctrl)
 
-			h := NewGroupHandler(uc)
+			h := handler.NewGroupHandler(uc)
 
 			err := h.UpdateGroup(c)
 			if err != nil {
@@ -909,7 +893,7 @@ func TestGroupHandler_DeleteGroup(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newGroupUsecase(ctrl)
 
-			h := NewGroupHandler(uc)
+			h := handler.NewGroupHandler(uc)
 
 			err := h.DeleteGroup(c)
 			if err != nil {

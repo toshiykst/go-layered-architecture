@@ -1,4 +1,4 @@
-package database
+package database_test
 
 import (
 	"errors"
@@ -13,7 +13,7 @@ import (
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
-	"github.com/toshiykst/go-layerd-architecture/app/testutil"
+	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database"
 )
 
 func TestDatabase_dbGroupRepository_Find(t *testing.T) {
@@ -69,7 +69,7 @@ func TestDatabase_dbGroupRepository_Find(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -107,7 +107,9 @@ func TestDatabase_dbGroupRepository_Find(t *testing.T) {
 				}
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			got, err := r.Find(tt.gID)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -238,7 +240,7 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -260,7 +262,7 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 				if tt.wantGroupUsersSQL != "" {
 					groupUsersExpectQuery := mock.
 						ExpectQuery(regexp.QuoteMeta(tt.wantGroupUsersSQL)).
-						WithArgs(testutil.ToDriverValues[model.GroupID](t, tt.groups.IDs()...)...)
+						WithArgs(toDriverValues[model.GroupID](t, tt.groups.IDs()...)...)
 					if tt.dbGroupUsersErr != nil {
 						groupUsersExpectQuery.WillReturnError(tt.dbGroupUsersErr)
 					} else {
@@ -276,7 +278,9 @@ func TestDatabase_dbGroupRepository_List(t *testing.T) {
 				}
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			got, err := r.List(repository.GroupListFilter{})
 			if tt.wantErr != nil {
 				if err == nil {
@@ -405,7 +409,7 @@ func TestDatabase_dbGroupRepository_List_FilterByUserIDs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -415,7 +419,7 @@ func TestDatabase_dbGroupRepository_List_FilterByUserIDs(t *testing.T) {
 			if tt.wantGroupUsersSQL != "" {
 				groupUsersExpectQuery := mock.
 					ExpectQuery(regexp.QuoteMeta(tt.wantGroupUsersSQL)).
-					WithArgs(testutil.ToDriverValues[model.UserID](t, tt.filter.UserIDs...)...)
+					WithArgs(toDriverValues[model.UserID](t, tt.filter.UserIDs...)...)
 				if tt.dbGroupUsersErr != nil {
 					groupUsersExpectQuery.WillReturnError(tt.dbGroupUsersErr)
 				} else {
@@ -445,7 +449,9 @@ func TestDatabase_dbGroupRepository_List_FilterByUserIDs(t *testing.T) {
 				}
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			got, err := r.List(tt.filter)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -572,7 +578,7 @@ func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -595,7 +601,7 @@ func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 					}
 					groupUsersExpectExec := mock.
 						ExpectExec(regexp.QuoteMeta(tt.wantGroupUsersSQL)).
-						WithArgs(testutil.ToDriverValues(t, sqlArgs...)...)
+						WithArgs(toDriverValues(t, sqlArgs...)...)
 					if tt.dbGroupUsersErr != nil {
 						groupUsersExpectExec.WillReturnError(tt.dbGroupUsersErr)
 					} else {
@@ -604,7 +610,9 @@ func TestDatabase_dbGroupRepository_Create(t *testing.T) {
 				}
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			got, err := r.Create(tt.group)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -652,7 +660,7 @@ func TestDatabase_dbGroupRepository_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -669,7 +677,9 @@ func TestDatabase_dbGroupRepository_Update(t *testing.T) {
 				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			err = r.Update(tt.group)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -762,7 +772,7 @@ func TestDatabase_dbGroupRepository_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -792,7 +802,9 @@ func TestDatabase_dbGroupRepository_Delete(t *testing.T) {
 				}
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			err = r.Delete(tt.group)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -878,7 +890,7 @@ func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -897,7 +909,7 @@ func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 
 				expectExec := mock.
 					ExpectExec(regexp.QuoteMeta("INSERT INTO `group_users` (`group_id`,`user_id`) VALUES " + strings.Join(placeHolders, ","))).
-					WithArgs(testutil.ToDriverValues(t, sqlArgs...)...)
+					WithArgs(toDriverValues(t, sqlArgs...)...)
 
 				if tt.dbErr != nil {
 					expectExec.WillReturnError(tt.dbErr)
@@ -906,7 +918,9 @@ func TestDatabase_dbGroupRepository_AddUsers(t *testing.T) {
 				}
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			err = r.AddUsers(tt.args.gID, tt.args.uIDs)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -992,7 +1006,7 @@ func TestDatabase_dbGroupRepository_RemoveUsers(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -1011,7 +1025,9 @@ func TestDatabase_dbGroupRepository_RemoveUsers(t *testing.T) {
 				}
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			err = r.RemoveUsers(tt.args.gID, tt.args.uIDs)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -1080,7 +1096,7 @@ func TestDatabase_dbGroupRepository_RemoveUsersFromAll(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -1099,7 +1115,9 @@ func TestDatabase_dbGroupRepository_RemoveUsersFromAll(t *testing.T) {
 				}
 			}
 
-			r := &dbGroupRepository{db: db}
+			r := &database.DBGroupRepository{}
+			r.SetDB(db)
+
 			err = r.RemoveUsersFromAll(tt.args.uIDs)
 			if tt.wantErr != nil {
 				if err == nil {

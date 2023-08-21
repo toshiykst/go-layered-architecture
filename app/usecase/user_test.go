@@ -1,4 +1,4 @@
-package usecase
+package usecase_test
 
 import (
 	"errors"
@@ -13,6 +13,7 @@ import (
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
 	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/memory"
 	mockfactory "github.com/toshiykst/go-layerd-architecture/app/mock/domain/factory"
+	"github.com/toshiykst/go-layerd-architecture/app/usecase"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
@@ -65,7 +66,7 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 					Email:  "TEST_USER_EMAIL",
 				},
 			},
-			wantErr: ErrInvalidUserInput,
+			wantErr: usecase.ErrInvalidUserInput,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -89,7 +90,7 @@ func TestUserUsecase_CreateUser(t *testing.T) {
 			r := tt.newMemoryRepository()
 			us := domainservice.NewUserService(r)
 			gs := domainservice.NewGroupService(r)
-			uc := NewUserUsecase(r, tt.newMockFactory(ctrl), us, gs)
+			uc := usecase.NewUserUsecase(r, tt.newMockFactory(ctrl), us, gs)
 
 			got, err := uc.CreateUser(tt.in)
 
@@ -152,7 +153,7 @@ func TestUserUsecase_GetUser(t *testing.T) {
 				UserID: "TEST_USER_ID",
 			},
 			want:    nil,
-			wantErr: ErrUserNotFound,
+			wantErr: usecase.ErrUserNotFound,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -169,7 +170,7 @@ func TestUserUsecase_GetUser(t *testing.T) {
 			r := tt.newMemoryRepository()
 			us := domainservice.NewUserService(r)
 			gs := domainservice.NewGroupService(r)
-			uc := NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), us, gs)
+			uc := usecase.NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), us, gs)
 
 			got, err := uc.GetUser(tt.in)
 			if tt.wantErr != nil {
@@ -250,7 +251,7 @@ func TestUserUsecase_GetUsers(t *testing.T) {
 			r := tt.newMemoryRepository()
 			us := domainservice.NewUserService(r)
 			gs := domainservice.NewGroupService(r)
-			uc := NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), us, gs)
+			uc := usecase.NewUserUsecase(r, mockfactory.NewMockUserFactory(ctrl), us, gs)
 
 			got, err := uc.GetUsers(tt.in)
 			if tt.wantErr != nil {
@@ -314,7 +315,7 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 				Email:  "TEST_USER_EMAIL_UPDATED",
 			},
 			wantUser: nil,
-			wantErr:  ErrInvalidUserInput,
+			wantErr:  usecase.ErrInvalidUserInput,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -329,7 +330,7 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 				Email:  "TEST_USER_EMAIL_UPDATED",
 			},
 			wantUser: nil,
-			wantErr:  ErrUserNotFound,
+			wantErr:  usecase.ErrUserNotFound,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -347,7 +348,7 @@ func TestUserUsecase_UpdateUser(t *testing.T) {
 			r := tt.newMemoryRepository()
 			us := domainservice.NewUserService(r)
 			gs := domainservice.NewGroupService(r)
-			uc := NewUserUsecase(r, f, us, gs)
+			uc := usecase.NewUserUsecase(r, f, us, gs)
 
 			_, err := uc.UpdateUser(tt.in)
 			if tt.wantErr != nil {
@@ -429,7 +430,7 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 			in: &dto.DeleteUserInput{
 				UserID: "TEST_USER_ID",
 			},
-			wantErr: ErrUserNotFound,
+			wantErr: usecase.ErrUserNotFound,
 			newMemoryRepository: func() repository.Repository {
 				s := memory.NewStore()
 				r := memory.NewMemoryRepository(s)
@@ -447,10 +448,9 @@ func TestUserUsecase_DeleteUser(t *testing.T) {
 			r := tt.newMemoryRepository()
 			us := domainservice.NewUserService(r)
 			gs := domainservice.NewGroupService(r)
+			uc := usecase.NewUserUsecase(r, f, us, gs)
 
-			uc := NewUserUsecase(r, f, us, gs)
 			_, err := uc.DeleteUser(tt.in)
-
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Error("want an error, but has no error")

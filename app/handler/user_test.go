@@ -1,4 +1,4 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
@@ -11,44 +11,28 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/labstack/echo"
 	"go.uber.org/mock/gomock"
 
+	"github.com/toshiykst/go-layerd-architecture/app/handler"
 	"github.com/toshiykst/go-layerd-architecture/app/handler/response"
 	mockusecase "github.com/toshiykst/go-layerd-architecture/app/mock/usecase"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase"
 	"github.com/toshiykst/go-layerd-architecture/app/usecase/dto"
 )
 
-func TestNewUserHandler(t *testing.T) {
-	t.Run("Returns an user handler instance", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		uc := mockusecase.NewMockUserUsecase(ctrl)
-		got := NewUserHandler(uc)
-		want := &UserHandler{uc: uc}
-		if diff := cmp.Diff(got, want, cmpopts.IgnoreUnexported(UserHandler{})); diff != "" {
-			t.Errorf(
-				"NewUserHandler(%v)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
-				uc, got, want, diff,
-			)
-		}
-	})
-}
-
 func TestUserHandler_CreateUser(t *testing.T) {
 	tests := []struct {
 		name           string
-		req            *CreateUserRequest
+		req            *handler.CreateUserRequest
 		newUserUsecase func(ctrl *gomock.Controller) usecase.UserUsecase
 		wantStatus     int
-		wantRes        *CreateUserResponse
+		wantRes        *handler.CreateUserResponse
 		wantErrRes     *response.ErrorResponse
 	}{
 		{
 			name: "Create a user and returns the user response",
-			req: &CreateUserRequest{
+			req: &handler.CreateUserRequest{
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
 			},
@@ -68,7 +52,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 				return uc
 			},
 			wantStatus: http.StatusCreated,
-			wantRes: &CreateUserResponse{
+			wantRes: &handler.CreateUserResponse{
 				User: response.User{
 					UserID: "TEST_USER_ID",
 					Name:   "TEST_USER_NAME",
@@ -79,7 +63,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 		},
 		{
 			name: "Returns invalid arguments error response when group input is invalid",
-			req: &CreateUserRequest{
+			req: &handler.CreateUserRequest{
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
 			},
@@ -100,7 +84,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 		},
 		{
 			name: "Returns internal server error response",
-			req: &CreateUserRequest{
+			req: &handler.CreateUserRequest{
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
 			},
@@ -140,7 +124,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newUserUsecase(ctrl)
 
-			h := NewUserHandler(uc)
+			h := handler.NewUserHandler(uc)
 
 			err := h.CreateUser(c)
 			if err != nil {
@@ -166,7 +150,7 @@ func TestUserHandler_CreateUser(t *testing.T) {
 			}(res.Body)
 
 			if tt.wantRes != nil {
-				var got *CreateUserResponse
+				var got *handler.CreateUserResponse
 				_ = json.Unmarshal(resBody, &got)
 				if diff := cmp.Diff(got, tt.wantRes); diff != "" {
 					t.Errorf(
@@ -196,7 +180,7 @@ func TestUserHandler_GetUser(t *testing.T) {
 		id             string
 		newUserUsecase func(ctrl *gomock.Controller) usecase.UserUsecase
 		wantStatus     int
-		wantRes        *GetUserResponse
+		wantRes        *handler.GetUserResponse
 		wantErrRes     *response.ErrorResponse
 	}{
 		{
@@ -218,7 +202,7 @@ func TestUserHandler_GetUser(t *testing.T) {
 				return uc
 			},
 			wantStatus: http.StatusOK,
-			wantRes: &GetUserResponse{
+			wantRes: &handler.GetUserResponse{
 				User: response.User{
 					UserID: "TEST_USER_ID",
 					Name:   "TEST_USER_NAME",
@@ -285,7 +269,7 @@ func TestUserHandler_GetUser(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newUserUsecase(ctrl)
 
-			h := NewUserHandler(uc)
+			h := handler.NewUserHandler(uc)
 
 			err := h.GetUser(c)
 			if err != nil {
@@ -311,7 +295,7 @@ func TestUserHandler_GetUser(t *testing.T) {
 			}(res.Body)
 
 			if tt.wantRes != nil {
-				var got *GetUserResponse
+				var got *handler.GetUserResponse
 				_ = json.Unmarshal(resBody, &got)
 				if diff := cmp.Diff(got, tt.wantRes); diff != "" {
 					t.Errorf(
@@ -340,7 +324,7 @@ func TestUserHandler_GetUsers(t *testing.T) {
 		name           string
 		newUserUsecase func(ctrl *gomock.Controller) usecase.UserUsecase
 		wantStatus     int
-		wantRes        *GetUsersResponse
+		wantRes        *handler.GetUsersResponse
 		wantErrRes     *response.ErrorResponse
 	}{
 		{
@@ -373,7 +357,7 @@ func TestUserHandler_GetUsers(t *testing.T) {
 				return uc
 			},
 			wantStatus: http.StatusOK,
-			wantRes: &GetUsersResponse{
+			wantRes: &handler.GetUsersResponse{
 				Users: []response.User{
 					{
 						UserID: "TEST_USER_ID_1",
@@ -431,7 +415,7 @@ func TestUserHandler_GetUsers(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newUserUsecase(ctrl)
 
-			h := NewUserHandler(uc)
+			h := handler.NewUserHandler(uc)
 
 			err := h.GetUsers(c)
 			if err != nil {
@@ -457,7 +441,7 @@ func TestUserHandler_GetUsers(t *testing.T) {
 			}(res.Body)
 
 			if tt.wantRes != nil {
-				var got *GetUsersResponse
+				var got *handler.GetUsersResponse
 				_ = json.Unmarshal(resBody, &got)
 				if diff := cmp.Diff(got, tt.wantRes); diff != "" {
 					t.Errorf(
@@ -485,7 +469,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 	tests := []struct {
 		name           string
 		uID            string
-		req            *UpdateUserRequest
+		req            *handler.UpdateUserRequest
 		newUserUsecase func(ctrl *gomock.Controller) usecase.UserUsecase
 		wantStatus     int
 		wantErrRes     *response.ErrorResponse
@@ -493,7 +477,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 		{
 			name: "Update a user",
 			uID:  "TEST_USER_ID",
-			req: &UpdateUserRequest{
+			req: &handler.UpdateUserRequest{
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
 			},
@@ -546,7 +530,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 		{
 			name: "Returns internal server error response",
 			uID:  "TEST_USER_ID",
-			req: &UpdateUserRequest{
+			req: &handler.UpdateUserRequest{
 				Name:  "TEST_USER_NAME",
 				Email: "TEST_USER_EMAIL",
 			},
@@ -585,7 +569,7 @@ func TestUserHandler_UpdateUser(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newUserUsecase(ctrl)
 
-			h := NewUserHandler(uc)
+			h := handler.NewUserHandler(uc)
 
 			err := h.UpdateUser(c)
 			if err != nil {
@@ -700,7 +684,7 @@ func TestUserHandler_DeleteUser(t *testing.T) {
 			defer ctrl.Finish()
 			uc := tt.newUserUsecase(ctrl)
 
-			h := NewUserHandler(uc)
+			h := handler.NewUserHandler(uc)
 
 			err := h.DeleteUser(c)
 			if err != nil {

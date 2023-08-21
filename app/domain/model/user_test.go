@@ -105,7 +105,7 @@ func TestNewUser(t *testing.T) {
 				}
 				if diff := cmp.Diff(got, tt.want, cmp.AllowUnexported(User{})); diff != "" {
 					t.Errorf(
-						"NewUser(%s, %s, %s)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
+						"model.NewUser(%s, %s, %s)=%v, nil; want %v, nil\ndiffers: (-got +want)\n%s",
 						tt.args.id, tt.args.name, tt.args.email, err, tt.wantErr, diff,
 					)
 				}
@@ -135,7 +135,7 @@ func TestUser_ID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.user.ID(); got != tt.want {
-				t.Errorf("ID()=%v; want %v, receiver=%v", got, tt.want, tt.user)
+				t.Errorf("user.ID()=%v; want %v, receiver=%v", got, tt.want, tt.user)
 			}
 		})
 	}
@@ -162,7 +162,7 @@ func TestUser_Name(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.user.Name(); got != tt.want {
-				t.Errorf("Name()=%v; want %v, receiver=%v", got, tt.want, tt.user)
+				t.Errorf("user.Name()=%v; want %v, receiver=%v", got, tt.want, tt.user)
 			}
 		})
 	}
@@ -189,7 +189,7 @@ func TestUser_Email(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.user.Email(); got != tt.want {
-				t.Errorf("Email()=%v; want %v, receiver=%v", got, tt.want, tt.user)
+				t.Errorf("user.Email()=%v; want %v, receiver=%v", got, tt.want, tt.user)
 			}
 		})
 	}

@@ -1,4 +1,4 @@
-package database
+package database_test
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ import (
 
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/repository"
-	"github.com/toshiykst/go-layerd-architecture/app/testutil"
+	"github.com/toshiykst/go-layerd-architecture/app/infrastructure/database"
 )
 
 func TestDatabase_dbUserRepository_Find(t *testing.T) {
@@ -48,7 +48,7 @@ func TestDatabase_dbUserRepository_Find(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -70,7 +70,9 @@ func TestDatabase_dbUserRepository_Find(t *testing.T) {
 				expectQuery.WillReturnRows(rows)
 			}
 
-			r := &dbUserRepository{db: db}
+			r := &database.DBUserRepository{}
+			r.SetDB(db)
+
 			got, err := r.Find(tt.uID)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -166,7 +168,7 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -177,7 +179,7 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 				ExpectQuery(regexp.QuoteMeta(tt.wantSQL))
 
 			if len(tt.filter.UserIDs) > 0 {
-				expectQuery.WithArgs(testutil.ToDriverValues[model.UserID](t, tt.filter.UserIDs...)...)
+				expectQuery.WithArgs(toDriverValues[model.UserID](t, tt.filter.UserIDs...)...)
 			}
 
 			if tt.dbErr != nil {
@@ -191,7 +193,9 @@ func TestDatabase_dbUserRepository_List(t *testing.T) {
 				expectQuery.WillReturnRows(rows)
 			}
 
-			r := &dbUserRepository{db: db}
+			r := &database.DBUserRepository{}
+			r.SetDB(db)
+
 			got, err := r.List(tt.filter)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -242,7 +246,7 @@ func TestDatabase_dbUserRepository_Create(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -259,7 +263,9 @@ func TestDatabase_dbUserRepository_Create(t *testing.T) {
 				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
 			}
 
-			r := &dbUserRepository{db: db}
+			r := &database.DBUserRepository{}
+			r.SetDB(db)
+
 			got, err := r.Create(tt.user)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -307,7 +313,7 @@ func TestDatabase_dbUserRepository_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -324,7 +330,9 @@ func TestDatabase_dbUserRepository_Update(t *testing.T) {
 				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
 			}
 
-			r := &dbUserRepository{db: db}
+			r := &database.DBUserRepository{}
+			r.SetDB(db)
+
 			err = r.Update(tt.user)
 			if tt.wantErr != nil {
 				if err == nil {
@@ -363,7 +371,7 @@ func TestDatabase_dbUserRepository_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mock, db := testutil.DBMock(t)
+			mock, db := dbMock(t)
 			sqlDB, err := db.DB()
 			if err != nil {
 				t.Fatalf("want no err, but has error %v", err)
@@ -380,10 +388,10 @@ func TestDatabase_dbUserRepository_Delete(t *testing.T) {
 				expectExec.WillReturnResult(sqlmock.NewResult(1, 1))
 			}
 
-			r := &dbUserRepository{db: db}
+			r := &database.DBUserRepository{}
+			r.SetDB(db)
 
 			err = r.Delete(tt.userID)
-
 			if tt.wantErr != nil {
 				if err == nil {
 					t.Error("want an error, but has no error")

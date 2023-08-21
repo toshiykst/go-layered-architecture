@@ -1,4 +1,4 @@
-package factory
+package factory_test
 
 import (
 	"errors"
@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/uuid"
 
+	"github.com/toshiykst/go-layerd-architecture/app/domain/factory"
 	"github.com/toshiykst/go-layerd-architecture/app/domain/model"
 )
 
@@ -77,7 +78,7 @@ func TestGroupFactory_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setup()
-			f := NewGroupFactory()
+			f := factory.NewGroupFactory()
 			got, err := f.Create(tt.args.name, tt.args.uIDs)
 			if tt.wantErr != nil {
 				if err == nil {
