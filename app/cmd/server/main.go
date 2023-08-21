@@ -40,6 +40,9 @@ func main() {
 	uuc := usecase.NewUserUsecase(db, uf, us, gs)
 	uh := handler.NewUserHandler(uuc)
 
+	guc := usecase.NewGroupUsecase(db, gf, gs, us)
+	gh := handler.NewGroupHandler(guc)
+
 	e := echo.New()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -50,8 +53,6 @@ func main() {
 	e.PUT("/users/:id", uh.UpdateUser)
 	e.DELETE("/users/:id", uh.DeleteUser)
 
-	guc := usecase.NewGroupUsecase(db, gf, gs, us)
-	gh := handler.NewGroupHandler(guc)
 	e.POST("/groups", gh.CreateGroup)
 	e.GET("/groups/:id", gh.GetGroup)
 	e.GET("/groups", gh.GetGroups)
